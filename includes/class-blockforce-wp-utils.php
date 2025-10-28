@@ -39,8 +39,18 @@ class BlockForce_WP_Utils {
      * Send the admin alert email using the HTML template.
      */
     public static function send_admin_alert($user_ip, $new_login_slug) {
-        $admin_email = get_option('admin_email');
-        if (empty($admin_email)) {
+        // Get the plugin settings to check for a custom email
+        $settings = get_option('blockforce_settings');
+        
+        $target_email = '';
+        if (isset($settings['alert_email']) && is_email($settings['alert_email'])) {
+            $target_email = $settings['alert_email'];
+        } else {
+            // Fallback to the default admin email
+            $target_email = get_option('admin_email');
+        }
+        
+        if (empty($target_email)) {
             return;
         }
         
@@ -69,7 +79,7 @@ class BlockForce_WP_Utils {
         // Set content type to HTML
         add_filter('wp_mail_content_type', array(__CLASS__, 'set_html_content_type'));
         
-        @wp_mail($admin_email, $subject, $message);
+        @wp_mail($target_email, $subject, $message);
         
         // Reset content type to plain text
         remove_filter('wp_mail_content_type', array(__CLASS__, 'set_html_content_type'));

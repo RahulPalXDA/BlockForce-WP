@@ -16,6 +16,7 @@ function blockforce_wp_activate() {
             'log_time' => 7200,
             'enable_url_change' => 1,
             'enable_ip_blocking' => 1, 
+            'alert_email' => '',
         );
         update_option('blockforce_settings', $default_settings); 
     }

@@ -54,6 +54,7 @@ class BlockForce_WP_Admin {
         add_settings_field('log_time', __('Time to Watch for Attacks (in seconds)', $this->text_domain), array($this, 'log_time_render'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('enable_ip_blocking', __('Block Attacker\'s IP', $this->text_domain), array($this, 'enable_ip_blocking_render'), 'blockforce_settings', 'blockforce_main_section'); 
         add_settings_field('enable_url_change', __('Auto-Change Login Link', $this->text_domain), array($this, 'enable_url_change_render'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field('alert_email', __('Alert Email Address', $this->text_domain), array($this, 'alert_email_render'), 'blockforce_settings', 'blockforce_main_section');
     }
 
     public function sanitize_settings($input) {
@@ -63,6 +64,7 @@ class BlockForce_WP_Admin {
         $output['log_time'] = max(1, (int) $input['log_time']); 
         $output['enable_url_change'] = isset($input['enable_url_change']) ? 1 : 0;
         $output['enable_ip_blocking'] = isset($input['enable_ip_blocking']) ? 1 : 0; 
+        $output['alert_email'] = isset($input['alert_email']) ? sanitize_email($input['alert_email']) : '';
         add_settings_error('blockforce_settings', 'settings_updated', __('Settings saved.', $this->text_domain), 'updated');
         return $output;
     }
@@ -87,6 +89,12 @@ class BlockForce_WP_Admin {
     
     public function enable_url_change_render() {
         ?><input type="checkbox" name="blockforce_settings[enable_url_change]" value="1" <?php checked(1, $this->settings['enable_url_change']); ?>><label><?php esc_html_e('If checked, the login link will automatically change to a new, secret link after too many failed attempts.', $this->text_domain); ?></label><?php
+    }
+
+    public function alert_email_render() {
+        $email = isset($this->settings['alert_email']) ? $this->settings['alert_email'] : '';
+        ?><input type="email" name="blockforce_settings[alert_email]" value="<?php echo esc_attr($email); ?>" class="regular-text">
+        <p class="description"><?php esc_html_e('The email address to send security alerts to. If left blank, it defaults to the site administrator\'s email.', $this->text_domain); ?></p><?php
     }
     
     // --- Admin Page Display ---

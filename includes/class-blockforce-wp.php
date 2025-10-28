@@ -19,6 +19,7 @@ class BlockForce_WP {
         'log_time' => 7200,
         'enable_url_change' => 1,
         'enable_ip_blocking' => 1, 
+        'alert_email' => '',
     );
     
     public function __construct($basename) {
