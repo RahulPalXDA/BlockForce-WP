@@ -76,15 +76,31 @@ class BlockForce_WP_Security {
 
     /**
      * Handles the logic for changing the URL and sending the alert.
+     * IMPORTANT: Only changes the login URL if the email is sent successfully.
+     * This prevents admin lockout if SMTP/email fails.
+     * 
+     * @param string $username The username that was attempted
+     * @param string $user_ip The IP address of the attacker
+     * @param int $attempt_count Number of failed attempts
      */
     private function change_login_url_and_alert($username, $user_ip, $attempt_count) {
         $new_login_slug = BlockForce_WP_Utils::generate_random_slug();
-        update_option('blockforce_login_slug', $new_login_slug);
         
-        // Call the flush method from the login_url module via the core controller
-        $this->core->login_url->flush_rewrite_rules();
+        // CRITICAL: Send email FIRST, only change URL if email succeeds
+        $email_sent = BlockForce_WP_Utils::send_admin_alert($user_ip, $new_login_slug);
         
-        BlockForce_WP_Utils::send_admin_alert($user_ip, $new_login_slug);
+        if ($email_sent) {
+            // Email sent successfully, safe to change the login URL
+            update_option('blockforce_login_slug', $new_login_slug);
+            
+            // Call the flush method from the login_url module via the core controller
+            $this->core->login_url->flush_rewrite_rules();
+            
+            error_log('BlockForce WP: Login URL changed successfully to /' . $new_login_slug . ' after ' . $attempt_count . ' attempts from IP: ' . $user_ip);
+        } else {
+            // Email failed - DO NOT change the login URL to prevent lockout
+            error_log('BlockForce WP: Login URL change ABORTED - email failed to send. Attack from IP: ' . $user_ip . ' (' . $attempt_count . ' attempts)');
+        }
     }
 
     /**

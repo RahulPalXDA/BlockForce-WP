@@ -24,19 +24,28 @@ class BlockForce_WP_Utils {
     }
 
     /**
-     * Generate a random slug for the login URL.
+     * Generate a random slug for the login URL using cryptographically secure randomness.
+     * 
+     * @return string A 12-character hexadecimal string (cryptographically secure)
      */
     public static function generate_random_slug() {
-        $chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-        $slug = '';
-        for ($i = 0; $i < 12; $i++) {
-            $slug .= $chars[rand(0, strlen($chars) - 1)];
+        try {
+            // Generate 6 random bytes and convert to 12-character hex string
+            // This is cryptographically secure, unlike rand()
+            return bin2hex(random_bytes(6));
+        } catch (Exception $e) {
+            // Fallback to wp_generate_password if random_bytes fails
+            // Remove special characters to keep URL-friendly
+            return substr(str_replace(array('-', '_'), '', wp_generate_password(12, false)), 0, 12);
         }
-        return $slug;
     }
 
     /**
      * Send the admin alert email using the HTML template.
+     * 
+     * @param string $user_ip The IP address of the attacker
+     * @param string $new_login_slug The new login slug that was generated
+     * @return bool True if email was sent successfully, false otherwise
      */
     public static function send_admin_alert($user_ip, $new_login_slug) {
         // Get the plugin settings to check for a custom email
@@ -51,7 +60,8 @@ class BlockForce_WP_Utils {
         }
         
         if (empty($target_email)) {
-            return;
+            error_log('BlockForce WP: No valid email address configured for security alerts');
+            return false;
         }
         
         // Template variables
@@ -74,15 +84,25 @@ class BlockForce_WP_Utils {
             // Fallback to plain text if template is missing
             $message = "Security Alert: Login URL changed due to failed attempts from IP: " . $user_ip . "\n";
             $message .= "New Login URL: " . $new_login_url;
+            error_log('BlockForce WP: Email template not found at ' . $template_path);
         }
 
         // Set content type to HTML
         add_filter('wp_mail_content_type', array(__CLASS__, 'set_html_content_type'));
         
-        @wp_mail($target_email, $subject, $message);
+        $sent = wp_mail($target_email, $subject, $message);
         
         // Reset content type to plain text
         remove_filter('wp_mail_content_type', array(__CLASS__, 'set_html_content_type'));
+        
+        // Log the result
+        if (!$sent) {
+            error_log('BlockForce WP: Failed to send alert email to ' . $target_email . ' for IP: ' . $user_ip);
+        } else {
+            error_log('BlockForce WP: Security alert email sent successfully to ' . $target_email);
+        }
+        
+        return $sent;
     }
 
     /**

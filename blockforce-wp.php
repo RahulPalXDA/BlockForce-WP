@@ -1,10 +1,21 @@
 <?php
 /**
  * Plugin Name: BlockForce WP
- * Description: Minimal, enhanced login security with IP blocking, automatic URL change, and minimal plain-text alerts.
- * Version: 1.0 (Initial)
+ * Plugin URI: https://github.com/RahulPalXDA/BlockForce-WP
+ * Description: Minimal, enhanced login security with IP blocking, automatic URL change, and email alerts. Protects your WordPress site from brute-force attacks.
+ * Version: 1.0.0
+ * Requires at least: 5.0
+ * Requires PHP: 7.2
  * Author: RahulPalXDA
+ * Author URI: https://github.com/RahulPalXDA
+ * License: MIT
+ * License URI: https://opensource.org/licenses/MIT
  * Text Domain: blockforce-wp
+ * 
+ * @package BlockForce_WP
+ * @author RahulPalXDA
+ * @copyright 2024 RahulPalXDA
+ * @license MIT
  */
 
 if (!defined('ABSPATH')) {
