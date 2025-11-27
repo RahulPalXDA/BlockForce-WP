@@ -1,0 +1,152 @@
+/* BlockForce WP - Dashboard Widget Styles */
+
+.blockforce-dashboard-widget {
+    margin: -12px -12px 0 -12px;
+}
+
+.blockforce-dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.blockforce-dashboard-header h3 {
+    margin: 0 0 5px 0;
+    color: #fff;
+    font-size: 16px;
+}
+
+.blockforce-dashboard-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 13px;
+}
+
+.blockforce-dashboard-content {
+    padding: 0 12px 12px 12px;
+}
+
+.blockforce-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.blockforce-stat-card {
+    background: #f6f7f7;
+    padding: 12px;
+    border-radius: 4px;
+    text-align: center;
+    border-left: 3px solid #0073aa;
+}
+
+.blockforce-stat-card.danger {
+    border-left-color: #d63638;
+}
+
+.blockforce-stat-card.success {
+    border-left-color: #00a32a;
+}
+
+.blockforce-stat-card.warning {
+    border-left-color: #dba617;
+}
+
+.blockforce-stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.blockforce-stat-label {
+    font-size: 11px;
+    color: #646970;
+    text-transform: uppercase;
+}
+
+.blockforce-login-url-box {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+.blockforce-login-url-box strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.blockforce-login-url {
+    background: #f6f7f7;
+    padding: 8px 10px;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+    border: 1px solid #ddd;
+}
+
+.blockforce-status-indicators {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.blockforce-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.blockforce-status-badge.enabled {
+    background: #d7f0db;
+    color: #00a32a;
+}
+
+.blockforce-status-badge.disabled {
+    background: #f0f0f1;
+    color: #646970;
+}
+
+.blockforce-status-badge .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+.blockforce-quick-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.blockforce-quick-actions .button {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+    font-size: 12px;
+}
+
+@media screen and (max-width: 782px) {
+    .blockforce-stat-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .blockforce-quick-actions {
+        flex-direction: column;
+    }
+
+    .blockforce-quick-actions .button {
+        width: 100%;
+    }
+}
