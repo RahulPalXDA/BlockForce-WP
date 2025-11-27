@@ -91,10 +91,20 @@ class BlockForce_WP_Utils {
         
         // Set up email headers
         $admin_email = get_option('admin_email');
+        
+        // Get the domain from the site URL
+        $domain = parse_url($site_url, PHP_URL_HOST);
+        if (substr($domain, 0, 4) === 'www.') {
+            $domain = substr($domain, 4);
+        }
+        
+        // Use wordpress@domain.com as the sender to avoid DMARC/SPF issues
+        // This is critical for deliverability if admin_email is Gmail/Yahoo etc.
+        $from_email = 'wordpress@' . $domain;
         $from_name = $site_name;
         
         $headers = array();
-        $headers[] = 'From: ' . $from_name . ' <' . $admin_email . '>';
+        $headers[] = 'From: ' . $from_name . ' <' . $from_email . '>';
         $headers[] = 'Reply-To: ' . $admin_email;
         $headers[] = 'X-Mailer: WordPress/' . get_bloginfo('version') . '; ' . home_url();
         $headers[] = 'X-Priority: 1';
@@ -109,7 +119,7 @@ class BlockForce_WP_Utils {
             
             // Try sending plain text version as fallback
             $plain_headers = array();
-            $plain_headers[] = 'From: ' . $from_name . ' <' . $admin_email . '>';
+            $plain_headers[] = 'From: ' . $from_name . ' <' . $from_email . '>';
             $plain_headers[] = 'Reply-To: ' . $admin_email;
             $plain_headers[] = 'Content-Type: text/plain; charset=UTF-8';
             
