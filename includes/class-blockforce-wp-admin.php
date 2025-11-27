@@ -75,6 +75,7 @@ class BlockForce_WP_Admin {
                 font-size: 14px;
                 display: inline-block;
                 margin-top: 5px;
+                word-break: break-all;
             }
             .blockforce-help-box {
                 background: #f0f6fc;
@@ -143,6 +144,91 @@ class BlockForce_WP_Admin {
                 color: #00a32a;
                 font-weight: bold;
             }
+            
+            /* Mobile Responsive Styles */
+            @media screen and (max-width: 782px) {
+                .blockforce-card {
+                    padding: 15px;
+                    margin-bottom: 15px;
+                }
+                
+                .blockforce-info-grid {
+                    grid-template-columns: 1fr;
+                    gap: 10px;
+                }
+                
+                .blockforce-url-display {
+                    font-size: 12px;
+                    padding: 6px 10px;
+                    display: block;
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                
+                .blockforce-status-box {
+                    padding: 12px;
+                }
+                
+                .blockforce-help-box,
+                .blockforce-warning-box {
+                    padding: 10px 12px;
+                }
+                
+                .blockforce-badge {
+                    display: block;
+                    margin-left: 0;
+                    margin-top: 5px;
+                    text-align: center;
+                }
+                
+                .form-table th,
+                .form-table td {
+                    display: block;
+                    width: 100%;
+                    padding: 10px 0;
+                }
+                
+                .form-table th {
+                    padding-bottom: 5px;
+                }
+                
+                .form-table td {
+                    padding-top: 0;
+                }
+                
+                input[type='number'],
+                input[type='email'],
+                .regular-text {
+                    width: 100% !important;
+                    max-width: 100%;
+                }
+            }
+            
+            @media screen and (max-width: 600px) {
+                .blockforce-card h2 {
+                    font-size: 18px;
+                }
+                
+                .nav-tab-wrapper .nav-tab {
+                    font-size: 13px;
+                    padding: 8px 12px;
+                }
+            }
+            
+            /* Improved button styles for mobile */
+            @media screen and (max-width: 782px) {
+                .button,
+                .button-primary,
+                .button-secondary {
+                    padding: 10px 15px;
+                    height: auto;
+                    line-height: 1.4;
+                }
+                
+                .button .dashicons {
+                    vertical-align: middle;
+                }
+            }
         ";
         wp_add_inline_style('wp-admin', $custom_css);
     }
@@ -203,7 +289,7 @@ class BlockForce_WP_Admin {
             <br><strong><?php esc_html_e('Default: 2 attempts', $this->text_domain); ?></strong>
         </p>
         <div class="blockforce-help-box">
-            <h4><?php esc_html_e('💡 How it works:', $this->text_domain); ?></h4>
+            <h4><?php esc_html_e('How it works:', $this->text_domain); ?></h4>
             <p><?php esc_html_e('When an IP address fails to login this many times, BlockForce WP will activate protection measures based on your settings below.', $this->text_domain); ?></p>
             <p><strong><?php esc_html_e('Recommended:', $this->text_domain); ?></strong> <?php esc_html_e('2-5 attempts for maximum security, 5-10 for balanced protection.', $this->text_domain); ?></p>
         </div>
@@ -221,7 +307,7 @@ class BlockForce_WP_Admin {
             <br><strong><?php esc_html_e('Default: 120 seconds (2 minutes)', $this->text_domain); ?></strong>
         </p>
         <div class="blockforce-help-box">
-            <h4><?php esc_html_e('💡 How it works:', $this->text_domain); ?></h4>
+            <h4><?php esc_html_e('How it works:', $this->text_domain); ?></h4>
             <p><?php esc_html_e('When IP blocking is enabled, attackers will be completely blocked from accessing your site for this duration.', $this->text_domain); ?></p>
             <p><strong><?php esc_html_e('Common values:', $this->text_domain); ?></strong></p>
             <ul>
@@ -247,7 +333,7 @@ class BlockForce_WP_Admin {
             <?php esc_html_e('Recommended: Keep this enabled for immediate protection against brute-force attacks.', $this->text_domain); ?>
         </p>
         <div class="blockforce-help-box">
-            <h4><?php esc_html_e('💡 What this does:', $this->text_domain); ?></h4>
+            <h4><?php esc_html_e('What this does:', $this->text_domain); ?></h4>
             <p><?php esc_html_e('When enabled, any IP that exceeds the maximum failed attempts will be temporarily banned from accessing your entire website. This provides immediate protection against automated attacks.', $this->text_domain); ?></p>
         </div>
         <?php
@@ -264,7 +350,7 @@ class BlockForce_WP_Admin {
             <br><strong><?php esc_html_e('Default: 7200 seconds (2 hours)', $this->text_domain); ?></strong>
         </p>
         <div class="blockforce-help-box">
-            <h4><?php esc_html_e('💡 How it works:', $this->text_domain); ?></h4>
+            <h4><?php esc_html_e('How it works:', $this->text_domain); ?></h4>
             <p><?php esc_html_e('BlockForce WP tracks failed attempts within this time window. If an IP accumulates enough failures within this period, the login URL will automatically change (if enabled).', $this->text_domain); ?></p>
             <p><?php esc_html_e('This helps detect slow, persistent attacks that spread attempts over time to avoid detection.', $this->text_domain); ?></p>
             <p><strong><?php esc_html_e('Recommended:', $this->text_domain); ?></strong> <?php esc_html_e('7200 seconds (2 hours) for most sites.', $this->text_domain); ?></p>
@@ -291,7 +377,7 @@ class BlockForce_WP_Admin {
             <p><?php esc_html_e('The URL will ONLY change if the email is sent successfully. This prevents you from being locked out.', $this->text_domain); ?></p>
         </div>
         <div class="blockforce-help-box">
-            <h4><?php esc_html_e('💡 How it works:', $this->text_domain); ?></h4>
+            <h4><?php esc_html_e('How it works:', $this->text_domain); ?></h4>
             <p><?php esc_html_e('When enabled, if an attacker persists beyond the monitoring window, your wp-login.php will be automatically moved to a secret, random URL (e.g., /a1b2c3d4e5f6).', $this->text_domain); ?></p>
             <p><?php esc_html_e('This makes it impossible for bots to find your login page, effectively stopping the attack.', $this->text_domain); ?></p>
         </div>
@@ -308,7 +394,7 @@ class BlockForce_WP_Admin {
             <br><strong><?php esc_html_e('Default:', $this->text_domain); ?></strong> <?php echo esc_html($default_email); ?>
         </p>
         <div class="blockforce-help-box">
-            <h4><?php esc_html_e('💡 Email alerts:', $this->text_domain); ?></h4>
+            <h4><?php esc_html_e('Email alerts:', $this->text_domain); ?></h4>
             <p><?php esc_html_e('When your login URL changes automatically, BlockForce WP will send a professional HTML email to this address containing:', $this->text_domain); ?></p>
             <ul>
                 <li><?php esc_html_e('The new login URL (clickable link)', $this->text_domain); ?></li>
@@ -370,7 +456,7 @@ class BlockForce_WP_Admin {
         
         <!-- Current Status Card -->
         <div class="blockforce-card">
-            <h2><?php esc_html_e('🔐 Current Login Status', $this->text_domain); ?></h2>
+            <h2><?php esc_html_e('Current Login Status', $this->text_domain); ?></h2>
             <div class="blockforce-status-box <?php echo $current_slug ? 'blockforce-status-active' : 'blockforce-status-default'; ?>">
                 <?php if ($current_slug): ?>
                     <p style="margin: 0 0 10px 0;">
@@ -408,7 +494,7 @@ class BlockForce_WP_Admin {
 
         <!-- Protection Status Card -->
         <div class="blockforce-card">
-            <h2><?php esc_html_e('🛡️ Active Protection Features', $this->text_domain); ?></h2>
+            <h2><?php esc_html_e('Active Protection Features', $this->text_domain); ?></h2>
             <div class="blockforce-info-grid">
                 <div class="blockforce-info-item">
                     <h3>
@@ -450,7 +536,7 @@ class BlockForce_WP_Admin {
 
         <!-- How It Works Card -->
         <div class="blockforce-card">
-            <h2><?php esc_html_e('📚 How BlockForce WP Works', $this->text_domain); ?></h2>
+            <h2><?php esc_html_e('How BlockForce WP Works', $this->text_domain); ?></h2>
             <p><?php esc_html_e('BlockForce WP uses a dual-layer defense system to protect your WordPress login:', $this->text_domain); ?></p>
             
             <h3><?php esc_html_e('Layer 1: IP Blocking (Fast Response)', $this->text_domain); ?></h3>
@@ -524,16 +610,16 @@ class BlockForce_WP_Admin {
             
             if ($action_performed === 'full' || $action_performed === 'ips') {
                 blockforce_wp_clear_all_transients();
-                $success_message = __('✓ IP Blocks and Logs Cleared! All temporary IP bans and failed attempt logs have been removed.', $this->text_domain);
+                $success_message = __('IP Blocks and Logs Cleared! All temporary IP bans and failed attempt logs have been removed.', $this->text_domain);
             }
             
             if ($action_performed === 'full' || $action_performed === 'slug') {
                 update_option('blockforce_login_slug', '');
                 $slug_changed = true;
                 if ($action_performed === 'full') {
-                     $success_message = __('✓ Plugin Fully Reset! All blocks, logs, and the login link have been restored to defaults.', $this->text_domain);
+                     $success_message = __('Plugin Fully Reset! All blocks, logs, and the login link have been restored to defaults.', $this->text_domain);
                 } else {
-                     $success_message = __('✓ Login Link Reset! Your login page has been restored to wp-login.php.', $this->text_domain);
+                     $success_message = __('Login Link Reset! Your login page has been restored to wp-login.php.', $this->text_domain);
                 }
             }
             
@@ -569,7 +655,7 @@ class BlockForce_WP_Admin {
         );
         ?>
         <div class="blockforce-card">
-            <h2><?php esc_html_e('🔄 Reset & Maintenance Tools', $this->text_domain); ?></h2>
+            <h2><?php esc_html_e('Reset & Maintenance Tools', $this->text_domain); ?></h2>
             <p><?php esc_html_e('Use these tools to manually reset various aspects of BlockForce WP. These actions cannot be undone.', $this->text_domain); ?></p>
             
             <?php settings_errors('blockforce_reset'); ?>

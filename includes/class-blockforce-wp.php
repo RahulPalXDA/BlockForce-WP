@@ -11,6 +11,8 @@ class BlockForce_WP {
     public $login_url;
     public $admin;
     public $features;
+    public $dashboard;
+    public $health_check;
     public $basename;
 
     private $default_settings = array(
@@ -27,15 +29,19 @@ class BlockForce_WP {
         $this->basename = $basename;
         
         // Load modules
-        $this->security   = new BlockForce_WP_Security($this->settings, $this);
-        $this->login_url  = new BlockForce_WP_Login_Url($this->settings, $this);
-        $this->admin      = new BlockForce_WP_Admin($this->settings, $this);
-        $this->features   = new BlockForce_WP_Features($this->settings, $this);
+        $this->security     = new BlockForce_WP_Security($this->settings, $this);
+        $this->login_url    = new BlockForce_WP_Login_Url($this->settings, $this);
+        $this->admin        = new BlockForce_WP_Admin($this->settings, $this);
+        $this->features     = new BlockForce_WP_Features($this->settings, $this);
+        $this->dashboard    = new BlockForce_WP_Dashboard($this->settings, $this);
+        $this->health_check = new BlockForce_WP_Health_Check($this->settings, $this);
         
         // Initialize hooks for each module
         $this->security->init_hooks();
         $this->login_url->init_hooks();
         $this->admin->init_hooks();
         $this->features->init_hooks();
+        $this->dashboard->init_hooks();
+        $this->health_check->init_hooks();
     }
 }
