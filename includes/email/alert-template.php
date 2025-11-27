@@ -24,20 +24,20 @@ if (!defined('ABSPATH')) {
     <style type="text/css">
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; }
         .container { width: 90%; max-width: 600px; margin: 20px auto; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; }
-        .header { background-color: #0073aa; padding: 20px; text-align: center; }
-        .header h1 { margin: 0; color: #ffffff; font-size: 22px; }
+        .header { background-color: #d63638; padding: 20px; text-align: center; }
+        .header h1 { margin: 0; color: #ffffff; font-size: 22px; text-transform: uppercase; }
         .content { padding: 30px; background: #fff; }
         .content p { font-size: 15px; line-height: 1.6; color: #333; margin: 15px 0; }
-        .content .info-box { background-color: #f6f7f7; padding: 15px; border-left: 4px solid #0073aa; margin: 20px 0; }
-        .content .url-box { background-color: #f0f6fc; padding: 15px; border-radius: 4px; margin: 20px 0; }
-        .content .url-box a { color: #0073aa; text-decoration: none; word-break: break-all; }
+        .content .info-box { background-color: #fcf9e8; padding: 15px; border-left: 4px solid #d63638; margin: 20px 0; }
+        .content .url-box { background-color: #f6f7f7; padding: 15px; border-radius: 4px; margin: 20px 0; border: 1px solid #ddd; }
+        .content .url-box a { color: #d63638; text-decoration: none; word-break: break-all; font-weight: bold; }
         .footer { background-color: #f6f7f7; padding: 15px; text-align: center; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Login URL Updated</h1>
+            <h1>LOGIN URL UPDATED</h1>
         </div>
         <div class="content">
             <p>Hello,</p>
