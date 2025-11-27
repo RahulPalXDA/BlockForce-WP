@@ -7,7 +7,7 @@
     border-radius: 4px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
 }
 
 .blockforce-card h2 {
@@ -68,27 +68,6 @@
     border-radius: 2px;
 }
 
-/* Info Grid */
-.blockforce-info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.blockforce-info-item {
-    background: #f6f7f7;
-    padding: 15px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-}
-
-.blockforce-info-item h3 {
-    margin-top: 0;
-    font-size: 14px;
-    color: #1d2327;
-}
-
 /* Badges */
 .blockforce-badge {
     display: inline-block;
@@ -107,26 +86,6 @@
 .blockforce-badge-disabled {
     background: #f0f0f1;
     color: #646970;
-}
-
-/* Feature List */
-.blockforce-feature-list {
-    list-style: none;
-    padding: 0;
-}
-
-.blockforce-feature-list li {
-    padding: 8px 0;
-    padding-left: 25px;
-    position: relative;
-}
-
-.blockforce-feature-list li:before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: #00a32a;
-    font-weight: bold;
 }
 
 /* Blocked IPs Table */
@@ -172,12 +131,7 @@
         padding: 15px;
         margin-bottom: 15px;
     }
-    
-    .blockforce-info-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    
+
     .blockforce-url-display {
         font-size: 12px;
         padding: 6px 10px;
@@ -185,55 +139,55 @@
         width: 100%;
         box-sizing: border-box;
     }
-    
+
     .blockforce-badge {
         display: block;
         margin-left: 0;
         margin-top: 5px;
         text-align: center;
     }
-    
+
     .form-table th,
     .form-table td {
         display: block;
         width: 100%;
         padding: 10px 0;
     }
-    
+
     .form-table th {
         padding-bottom: 5px;
     }
-    
+
     .form-table td {
         padding-top: 0;
     }
-    
+
     input[type='number'],
     input[type='email'],
     .regular-text {
         width: 100% !important;
         max-width: 100%;
     }
-    
+
     .blockforce-ips-table {
         font-size: 12px;
     }
-    
+
     .blockforce-ips-table th,
     .blockforce-ips-table td {
         padding: 8px 6px;
     }
-    
+
     .blockforce-bulk-actions {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .blockforce-bulk-actions select,
     .blockforce-bulk-actions button {
         width: 100%;
     }
-    
+
     .button,
     .button-primary,
     .button-secondary {
@@ -241,7 +195,7 @@
         height: auto;
         line-height: 1.4;
     }
-    
+
     .button .dashicons {
         vertical-align: middle;
     }
@@ -251,7 +205,7 @@
     .blockforce-card h2 {
         font-size: 18px;
     }
-    
+
     .nav-tab-wrapper .nav-tab {
         font-size: 13px;
         padding: 8px 12px;
