@@ -27,6 +27,9 @@ class BlockForce_WP_Login_Url {
         add_filter('network_site_url', array($this, 'change_login_url'), 10, 3);
         add_filter('wp_redirect', array($this, 'change_login_redirect_url'), 10, 2);
         add_filter('logout_redirect', array($this, 'change_logout_redirect_url'), 10, 3);
+        
+        // Remove default WordPress redirects to prevent exposing the secret URL
+        add_action('init', array($this, 'remove_default_redirects'));
     }
 
     public function get_login_slug() {
@@ -125,5 +128,17 @@ class BlockForce_WP_Login_Url {
             return true; 
         }
         return false;
+    }
+
+    /**
+     * Remove default WordPress redirects that might expose the secret URL.
+     * 
+     * WordPress by default redirects /login, /admin, /dashboard to the login page.
+     * We want to stop this behavior when a custom slug is active.
+     */
+    public function remove_default_redirects() {
+        if ($this->login_slug) {
+            remove_action('template_redirect', 'wp_redirect_admin_locations', 1000);
+        }
     }
 }
