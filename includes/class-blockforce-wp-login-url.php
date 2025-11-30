@@ -23,7 +23,7 @@ class BlockForce_WP_Login_Url
         add_filter('query_vars', array($this, 'add_query_vars'));
         add_action('template_redirect', array($this, 'handle_custom_login_url'));
         add_action('login_init', array($this, 'redirect_default_login_if_custom_active'));
-        add_action('admin_init', array($this, 'prevent_wpadmin_redirect'));
+        add_action('init', array($this, 'prevent_wpadmin_redirect'));
 
         add_filter('site_url', array($this, 'change_login_url'), 10, 4);
         add_filter('network_site_url', array($this, 'change_login_url'), 10, 3);
