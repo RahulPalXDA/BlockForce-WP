@@ -18,11 +18,42 @@ class BlockForce_WP_Security
 
     public function init_hooks()
     {
-        add_action('wp_login_failed', array($this, 'track_login_attempt'));
+        add_action('wp_login_failed', array($this, 'handle_failed_login'));
+        add_filter('authenticate', array($this, 'check_blocked_ip'), 30, 3);
+        add_action('wp_login', array($this, 'log_login_success'), 10, 2);
         add_action('init', array($this, 'check_and_redirect_blocked_users'), 1);
 
         // This hook is for the empty cleanup function
         add_action('blockforce_cleanup', array($this, 'cleanup_old_attempts'));
+    }
+
+    public function log_login_success($user_login, $user)
+    {
+        $this->log_activity($user_login, 'success');
+    }
+
+    public function handle_failed_login($username)
+    {
+        $this->log_activity($username, 'failed');
+        $this->track_login_attempt($username);
+    }
+
+    private function log_activity($username, $status)
+    {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'blockforce_logs';
+        $user_ip = BlockForce_WP_Utils::get_user_ip();
+
+        $wpdb->insert(
+            $table_name,
+            array(
+                'user_login' => $username,
+                'user_ip' => $user_ip,
+                'time' => current_time('mysql'),
+                'status' => $status
+            ),
+            array('%s', '%s', '%s', '%s')
+        );
     }
 
     /**
@@ -150,7 +181,7 @@ class BlockForce_WP_Security
             $parts = explode('|', $block_data);
             if (count($parts) === 2) {
                 $expires_at = intval($parts[1]);
-                if (time() < $expires_at) {
+                if (BlockForce_WP_Utils::get_current_time() < $expires_at) {
                     return true;
                 }
             }
@@ -163,8 +194,9 @@ class BlockForce_WP_Security
     {
         // Store permanent record with expiration time
         // Format: timestamp_blocked|timestamp_expires
-        $expires_at = time() + $block_time;
-        $value = time() . '|' . $expires_at;
+        $current_time = BlockForce_WP_Utils::get_current_time();
+        $expires_at = $current_time + $block_time;
+        $value = $current_time . '|' . $expires_at;
 
         add_option('bfwp_blocked_' . $user_ip, $value, '', 'no');
         update_option('bfwp_blocked_' . $user_ip, $value, 'no');

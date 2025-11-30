@@ -320,8 +320,8 @@ class BlockForce_WP_Admin
     public function sanitize_settings($input)
     {
         $output = array();
-        $output['attempt_limit'] = max(1, (int) $input['attempt_limit']); 
-        $output['block_time'] = max(1, (int) $input['block_time']); 
+        $output['attempt_limit'] = max(1, (int) $input['attempt_limit']);
+        $output['block_time'] = max(1, (int) $input['block_time']);
         $output['log_time'] = max(1, (int) $input['log_time']);
         $output['enable_url_change'] = isset($input['enable_url_change']) ? 1 : 0;
         $output['enable_ip_blocking'] = isset($input['enable_ip_blocking']) ? 1 : 0;
@@ -343,12 +343,15 @@ class BlockForce_WP_Admin
         <?php
     }
 
-    public function block_time_render() {
+    public function block_time_render()
+    {
         $minutes = round($this->settings['block_time'] / 60, 1);
         ?>
-        <input type="number" name="blockforce_settings[block_time]" value="<?php echo esc_attr($this->settings['block_time']); ?>" min="1" style="width: 120px;"> 
+        <input type="number" name="blockforce_settings[block_time]"
+            value="<?php echo esc_attr($this->settings['block_time']); ?>" min="1" style="width: 120px;">
         <span class="description"><?php esc_html_e('seconds', $this->text_domain); ?></span>
-        <span style="margin-left: 10px; color: #646970;">(<?php echo esc_html(sprintf(__('≈ %s minutes', $this->text_domain), $minutes)); ?>)</span>
+        <span
+            style="margin-left: 10px; color: #646970;">(<?php echo esc_html(sprintf(__('≈ %s minutes', $this->text_domain), $minutes)); ?>)</span>
         <p class="description">
             <?php esc_html_e('Block duration for malicious IPs. Default: 120 seconds', $this->text_domain); ?>
         </p>
@@ -434,41 +437,35 @@ class BlockForce_WP_Admin
 
     public function options_page()
     {
-        $tabs = array(
-            'overview' => __('Overview', $this->text_domain),
-            'settings' => __('Security Settings', $this->text_domain),
-            'reset' => __('Reset', $this->text_domain)
-        );
-        $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'overview';
-        $current_tab = array_key_exists($current_tab, $tabs) ? $current_tab : 'overview';
+        $active_tab = isset($_GET['tab']) ? $_GET['tab'] : 'overview';
         ?>
-        <div class="wrap">
-            <h1>
-                <span class="dashicons dashicons-shield" style="font-size: 32px; width: 32px; height: 32px;"></span>
-                <?php esc_html_e('BlockForce WP', $this->text_domain); ?>
-            </h1>
-            <p class="description" style="font-size: 14px; margin-bottom: 20px;">
-                <?php esc_html_e('Advanced login security and brute-force attack protection for WordPress', $this->text_domain); ?>
-            </p>
+        <div class="wrap blockforce-wrap">
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
 
             <h2 class="nav-tab-wrapper">
-                <?php foreach ($tabs as $tab => $name): ?>
-                    <a href="?page=blockforce-wp&tab=<?php echo esc_attr($tab); ?>"
-                        class="nav-tab <?php echo $current_tab == $tab ? 'nav-tab-active' : ''; ?>">
-                        <?php echo esc_html($name); ?>
-                    </a>
-                <?php endforeach; ?>
+                <a href="?page=blockforce-wp&tab=overview"
+                    class="nav-tab <?php echo $active_tab == 'overview' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e('Overview', $this->text_domain); ?></a>
+                <a href="?page=blockforce-wp&tab=logs"
+                    class="nav-tab <?php echo $active_tab == 'logs' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e('Activity Log', $this->text_domain); ?></a>
+                <a href="?page=blockforce-wp&tab=settings"
+                    class="nav-tab <?php echo $active_tab == 'settings' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e('Settings', $this->text_domain); ?></a>
+                <a href="?page=blockforce-wp&tab=reset"
+                    class="nav-tab <?php echo $active_tab == 'reset' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e('Reset Plugin', $this->text_domain); ?></a>
             </h2>
 
-            <?php
-            if ($current_tab == 'overview') {
-                $this->display_overview_tab();
-            } elseif ($current_tab == 'settings') {
-                $this->display_settings_tab();
-            } elseif ($current_tab == 'reset') {
-                $this->display_reset_tab();
-            }
-            ?>
+            <div class="blockforce-content">
+                <?php
+                if ($active_tab == 'overview') {
+                    $this->display_overview_tab();
+                } elseif ($active_tab == 'logs') {
+                    $this->display_logs_tab();
+                } elseif ($active_tab == 'settings') {
+                    $this->display_settings_tab();
+                } elseif ($active_tab == 'reset') {
+                    $this->display_reset_tab();
+                }
+                ?>
+            </div>
         </div>
         <?php
     }
@@ -538,7 +535,7 @@ class BlockForce_WP_Admin
                     $wpdb->esc_like('_transient_') . '%' // Exclude transients just in case
                 )
             );
-            
+
             if (!empty($blocked_ips)): ?>
                 <form method="post" action="">
                     <?php wp_nonce_field('blockforce_bulk_unblock', '_wpnonce_bulk'); ?>
@@ -549,7 +546,7 @@ class BlockForce_WP_Admin
                         </select>
                         <button type="submit" class="button"><?php esc_html_e('Apply', $this->text_domain); ?></button>
                     </div>
-                    
+
                     <table class="blockforce-ips-table">
                         <thead>
                             <tr>
@@ -560,10 +557,10 @@ class BlockForce_WP_Admin
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($blocked_ips as $blocked): 
+                            <?php foreach ($blocked_ips as $blocked):
                                 $ip = str_replace('bfwp_blocked_', '', $blocked->option_name);
                                 $parts = explode('|', $blocked->option_value);
-                                
+
                                 if (count($parts) === 2) {
                                     $blocked_time = intval($parts[0]);
                                     $expires_at = intval($parts[1]);
@@ -582,12 +579,14 @@ class BlockForce_WP_Admin
                                     <td><?php echo esc_html(human_time_diff($blocked_time, time()) . ' ago'); ?></td>
                                     <td>
                                         <?php if ($is_active): ?>
-                                            <span class="blockforce-badge blockforce-badge-enabled"><?php esc_html_e('Active', $this->text_domain); ?></span>
+                                            <span
+                                                class="blockforce-badge blockforce-badge-enabled"><?php esc_html_e('Active', $this->text_domain); ?></span>
                                             <span style="color: #646970; font-size: 12px; margin-left: 5px;">
                                                 (<?php echo esc_html(sprintf(__('%s left', $this->text_domain), human_time_diff(time(), $expires_at))); ?>)
                                             </span>
                                         <?php else: ?>
-                                            <span class="blockforce-badge blockforce-badge-disabled"><?php esc_html_e('Expired', $this->text_domain); ?></span>
+                                            <span
+                                                class="blockforce-badge blockforce-badge-disabled"><?php esc_html_e('Expired', $this->text_domain); ?></span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -608,6 +607,118 @@ class BlockForce_WP_Admin
                 <p><?php esc_html_e('No IP addresses are currently blocked.', $this->text_domain); ?></p>
             <?php endif; ?>
         </div>
+        <?php
+    }
+
+    public function display_logs_tab()
+    {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'blockforce_logs';
+
+        // Handle Bulk Delete
+        if (isset($_POST['blockforce_log_action']) && $_POST['blockforce_log_action'] == 'delete' && isset($_POST['log_ids'])) {
+            check_admin_referer('blockforce_log_bulk_action', '_wpnonce_log');
+            $ids = array_map('intval', $_POST['log_ids']);
+            if (!empty($ids)) {
+                $ids_placeholder = implode(',', array_fill(0, count($ids), '%d'));
+                $wpdb->query($wpdb->prepare("DELETE FROM $table_name WHERE id IN ($ids_placeholder)", $ids));
+                echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Selected logs deleted.', $this->text_domain) . '</p></div>';
+            }
+        }
+
+        // Pagination
+        $per_page = 20;
+        $current_page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
+        $offset = ($current_page - 1) * $per_page;
+
+        $total_items = $wpdb->get_var("SELECT COUNT(id) FROM $table_name");
+        $total_pages = ceil($total_items / $per_page);
+
+        $logs = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name ORDER BY time DESC LIMIT %d OFFSET %d", $per_page, $offset));
+
+        ?>
+        <h3><?php esc_html_e('Login Activity Log', $this->text_domain); ?></h3>
+
+        <form method="post" action="">
+            <?php wp_nonce_field('blockforce_log_bulk_action', '_wpnonce_log'); ?>
+            <div class="tablenav top">
+                <div class="alignleft actions bulkactions">
+                    <select name="blockforce_log_action">
+                        <option value=""><?php esc_html_e('Bulk Actions', $this->text_domain); ?></option>
+                        <option value="delete"><?php esc_html_e('Delete', $this->text_domain); ?></option>
+                    </select>
+                    <button type="submit" class="button action"><?php esc_html_e('Apply', $this->text_domain); ?></button>
+                </div>
+                <div class="tablenav-pages">
+                    <span
+                        class="displaying-num"><?php echo sprintf(_n('%s item', '%s items', $total_items, $this->text_domain), number_format_i18n($total_items)); ?></span>
+                    <?php if ($total_pages > 1): ?>
+                        <span class="pagination-links">
+                            <?php if ($current_page > 1): ?>
+                                <a class="prev-page button"
+                                    href="<?php echo esc_url(add_query_arg('paged', $current_page - 1)); ?>">‹</a>
+                            <?php endif; ?>
+                            <span class="paging-input">
+                                <?php echo sprintf(esc_html__('Page %1$d of %2$d', $this->text_domain), $current_page, $total_pages); ?>
+                            </span>
+                            <?php if ($current_page < $total_pages): ?>
+                                <a class="next-page button"
+                                    href="<?php echo esc_url(add_query_arg('paged', $current_page + 1)); ?>">›</a>
+                            <?php endif; ?>
+                        </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <table class="wp-list-table widefat fixed striped">
+                <thead>
+                    <tr>
+                        <td id="cb" class="manage-column column-cb check-column"><input type="checkbox" id="cb-select-all-1">
+                        </td>
+                        <th><?php esc_html_e('User', $this->text_domain); ?></th>
+                        <th><?php esc_html_e('IP Address', $this->text_domain); ?></th>
+                        <th><?php esc_html_e('Date', $this->text_domain); ?></th>
+                        <th><?php esc_html_e('Time', $this->text_domain); ?></th>
+                        <th><?php esc_html_e('Status', $this->text_domain); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($logs)): ?>
+                        <?php foreach ($logs as $log): ?>
+                            <tr>
+                                <th scope="row" class="check-column"><input type="checkbox" name="log_ids[]"
+                                        value="<?php echo esc_attr($log->id); ?>"></th>
+                                <td><?php echo esc_html($log->user_login); ?></td>
+                                <td><?php echo esc_html($log->user_ip); ?></td>
+                                <td><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($log->time))); ?></td>
+                                <td><?php echo esc_html(date_i18n(get_option('time_format'), strtotime($log->time))); ?></td>
+                                <td>
+                                    <?php if ($log->status == 'success'): ?>
+                                        <span
+                                            style="color: #00a32a; font-weight: bold;"><?php esc_html_e('Success', $this->text_domain); ?></span>
+                                    <?php else: ?>
+                                        <span
+                                            style="color: #d63638; font-weight: bold;"><?php esc_html_e('Failed', $this->text_domain); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="6"><?php esc_html_e('No logs found.', $this->text_domain); ?></td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </form>
+        <script>
+            document.getElementById('cb-select-all-1').addEventListener('change', function () {
+                var checkboxes = document.querySelectorAll('input[name="log_ids[]"]');
+                for (var i = 0; i < checkboxes.length; i++) {
+                    checkboxes[i].checked = this.checked;
+                }
+            });
+        </script>
         <?php
     }
 

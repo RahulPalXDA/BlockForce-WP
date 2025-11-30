@@ -8,6 +8,16 @@ class BlockForce_WP_Utils
 {
 
     /**
+     * Get the current Unix timestamp.
+     *
+     * @return int The current Unix timestamp.
+     */
+    public static function get_current_time()
+    {
+        return time();
+    }
+
+    /**
      * Get the user's IP address.
      */
     public static function get_user_ip()

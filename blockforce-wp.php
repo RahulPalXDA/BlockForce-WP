@@ -30,7 +30,7 @@ define('BFWP_BASENAME', plugin_basename(__FILE__));
 require_once BFWP_PATH . 'includes/functions.php';
 
 // Register activation and deactivation hooks
-register_activation_hook(__FILE__, 'blockforce_wp_activate');
+register_activation_hook(__FILE__, array('BlockForce_WP', 'activate'));
 register_deactivation_hook(__FILE__, 'blockforce_wp_deactivate');
 
 // Include all class files
@@ -44,7 +44,8 @@ require_once BFWP_PATH . 'includes/class-blockforce-wp-health-check.php';
 require_once BFWP_PATH . 'includes/class-blockforce-wp.php';
 
 // Initialize the main plugin controller
-function blockforce_wp_run() {
+function blockforce_wp_run()
+{
     new BlockForce_WP(BFWP_BASENAME);
 }
 add_action('plugins_loaded', 'blockforce_wp_run');
