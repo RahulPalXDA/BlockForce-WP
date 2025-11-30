@@ -8,14 +8,14 @@
  * Requires PHP: 7.2
  * Author: RahulPalXDA
  * Author URI: https://github.com/RahulPalXDA
- * License: MIT
- * License URI: https://opensource.org/licenses/MIT
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: blockforce-wp
  * 
  * @package BlockForce_WP
  * @author RahulPalXDA
  * @copyright 2024 RahulPalXDA
- * @license MIT
+ * @license GPL-2.0+
  */
 
 if (!defined('ABSPATH')) {
