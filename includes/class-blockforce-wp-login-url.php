@@ -66,7 +66,7 @@ class BlockForce_WP_Login_Url
     {
         global $pagenow;
         if ($this->login_slug && $pagenow === 'wp-login.php') {
-            wp_safe_redirect(home_url());
+            $this->trigger_404();
             exit;
         }
     }
@@ -78,10 +78,21 @@ class BlockForce_WP_Login_Url
         if (is_admin() && !is_user_logged_in() && !defined('DOING_AJAX')) {
             $is_blocked = isset($this->settings['enable_ip_blocking']) && $this->core->security->is_ip_blocked($user_ip);
             if ($this->login_slug || $is_blocked) {
-                wp_safe_redirect(home_url());
+                $this->trigger_404();
                 exit;
             }
         }
+    }
+
+    /**
+     * Trigger a 404 error to hide the existence of the page.
+     */
+    private function trigger_404()
+    {
+        global $wp_query;
+        $wp_query->set_404();
+        status_header(404);
+        get_template_part(404);
     }
 
     public function handle_custom_login_url()
