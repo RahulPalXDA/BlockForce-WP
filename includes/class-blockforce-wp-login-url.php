@@ -87,20 +87,13 @@ class BlockForce_WP_Login_Url
     /**
      * Trigger a 404 error to hide the existence of the page.
      */
+    /**
+     * Trigger a 404 error by redirecting to a non-existent slug.
+     * This ensures the theme's native 404 page is rendered correctly.
+     */
     private function trigger_404()
     {
-        global $wp_query;
-        $wp_query->set_404();
-        status_header(404);
-        nocache_headers();
-
-        $template = get_404_template();
-        if ($template) {
-            include($template);
-        } else {
-            // Fallback if theme has no 404.php
-            echo '<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1><p>The page you are looking for does not exist.</p></body></html>';
-        }
+        wp_safe_redirect(home_url('404'));
         exit;
     }
 
