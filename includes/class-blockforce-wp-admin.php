@@ -804,6 +804,10 @@ class BlockForce_WP_Admin
                 )
             );
 
+            // Clear activity logs
+            $table_name = $wpdb->prefix . 'blockforce_logs';
+            $wpdb->query("TRUNCATE TABLE $table_name");
+
             // Reset login slug
             update_option('blockforce_login_slug', '');
             $this->core->login_url->flush_rewrite_rules();
@@ -919,7 +923,7 @@ class BlockForce_WP_Admin
 
             <p>
                 <a href="<?php echo esc_url($reset_url); ?>"
-                    onclick="return confirm('<?php echo esc_js(__('Are you sure you want to reset the plugin?\n\nThis will:\n• Clear all IP blocks and logs\n• Reset login URL to wp-login.php\n• Keep your settings', $this->text_domain)); ?>')"
+                    onclick="return confirm('<?php echo esc_js(__('Are you sure? This will clear all security data and reset the login URL.', $this->text_domain)); ?>')"
                     class="button button-secondary button-large"
                     style="background-color: #d63638; color: #fff; border-color: #d63638;">
                     <span class="dashicons dashicons-update" style="margin-top: 3px;"></span>
