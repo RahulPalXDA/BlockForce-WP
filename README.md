@@ -1,71 +1,32 @@
 # BlockForce WP
 
-A lightweight WordPress security plugin that protects your login page from brute-force attacks through IP blocking and automatic login URL changes.
+Minimal, enhanced login security with IP blocking, automatic URL change, and email alerts.
 
-![BlockForce WP Admin Notification](screenshots/Screenshot.png)
+## Description
 
-## Features
+BlockForce WP is a lightweight yet powerful security plugin designed to protect your WordPress login page from brute-force attacks. It combines persistent IP blocking, automatic login URL changing, and detailed activity logging into a simple, easy-to-use package.
 
-- **IP Blocking**: Temporarily blocks malicious IPs after failed login attempts
-- **Auto URL Change**: Automatically moves wp-login.php to a secret URL when attacks are detected
-- **Email Alerts**: Sends notifications with the new login URL and attacker details
-- **Login Error Obfuscation**: Prevents username enumeration
-- **Dashboard Widget**: Real-time security statistics on your WordPress dashboard
-- **Health Check Integration**: Validates configuration through WordPress Site Health
+**Key Features:**
+*   **Brute Force Protection**: Automatically blocks IPs after a specified number of failed login attempts.
+*   **Persistent Blocking**: Blocks are stored in the database, ensuring protection even if the attacker clears their cookies.
+*   **Auto URL Change**: Automatically changes your login URL (slug) if an attack persists, hiding the login page from bots.
+*   **Activity Log**: detailed log of all successful and failed login attempts with bulk delete capability.
+*   **Email Alerts**: Get notified when an IP is blocked or your login URL is changed.
+*   **Stealth Mode**: Accessing the default `wp-login.php` or `wp-admin` redirects to a 404 page when a custom slug is active.
 
 ## Installation
 
-### Method 1: Download from GitHub
+1.  Upload the plugin files to the `/wp-content/plugins/blockforce-wp` directory, or install the plugin through the WordPress plugins screen directly.
+2.  Activate the plugin through the 'Plugins' screen in WordPress.
+3.  Navigate to **BlockForce WP** in the admin menu to configure your settings.
 
-1. Go to the [GitHub repository](https://github.com/RahulPalXDA/BlockForce-WP)
-2. Click the green "Code" button
-3. Select "Download ZIP"
-4. Log in to your WordPress admin panel
-5. Navigate to Plugins > Add New
-6. Click "Upload Plugin" at the top
-7. Choose the downloaded ZIP file
-8. Click "Install Now"
-9. Click "Activate Plugin"
-10. Configure settings at Settings > BlockForce WP
+## Frequently Asked Questions
 
-### Method 2: Manual Installation
+### What happens if I get locked out?
+If you get locked out, you can:
+1.  Wait for the block duration to expire (default 60 minutes).
+2.  Access your database and delete the `bfwp_blocked_[your_ip]` option from the `wp_options` table.
+3.  Rename the plugin folder via FTP to disable it temporarily.
 
-1. Download and extract the plugin ZIP file
-2. Upload the `blockforce-wp` folder to `/wp-content/plugins/`
-3. Activate the plugin through the 'Plugins' menu in WordPress
-4. Configure settings at Settings > BlockForce WP
-
-## Configuration
-
-Navigate to Settings > BlockForce WP to configure:
-
-- **Maximum Failed Attempts**: Number of failures before triggering protection (default: 2)
-- **IP Block Duration**: How long to block an IP address (default: 120 seconds)
-- **Attack Monitoring Window**: Time window for tracking persistent attacks (default: 7200 seconds)
-- **IP Blocking**: Enable/disable temporary IP blocks
-- **Auto URL Change**: Enable/disable automatic login URL changes
-- **Alert Email**: Email address for security notifications
-
-## How It Works
-
-### IP Blocking (Fast Response)
-- Blocks IPs that fail login X times within Y seconds
-- Provides immediate protection against rapid attacks
-
-### Login URL Change (Long-term Protection)
-- Changes login URL when an IP accumulates X failures within Z seconds
-- Stops persistent bot attacks by hiding the login page
-- Only changes URL if email notification is sent successfully
-
-## Requirements
-
-- WordPress 5.0 or higher
-- PHP 7.2 or higher
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues and feature requests, please visit the GitHub repository.
+### How do I reset the plugin?
+Go to the **Reset** tab in the plugin settings and click "Reset All Settings".
