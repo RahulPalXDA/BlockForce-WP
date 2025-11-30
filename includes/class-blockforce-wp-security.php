@@ -159,6 +159,23 @@ class BlockForce_WP_Security
         }
     }
 
+    /**
+     * Check if the user's IP is blocked during authentication.
+     *
+     * @param WP_User|WP_Error|null $user
+     * @param string $username
+     * @param string $password
+     * @return WP_User|WP_Error|null
+     */
+    public function check_blocked_ip($user, $username, $password)
+    {
+        $user_ip = BlockForce_WP_Utils::get_user_ip();
+        if ($this->is_ip_blocked($user_ip)) {
+            return new WP_Error('bfwp_blocked', __('Your IP address is temporarily blocked due to too many failed login attempts.', 'blockforce-wp'));
+        }
+        return $user;
+    }
+
     // --- Transient Helper Methods ---
 
     private function get_ip_attempts($user_ip)
