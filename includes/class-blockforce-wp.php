@@ -17,9 +17,9 @@ class BlockForce_WP
     public $basename;
 
     private $default_settings = array(
-        'attempt_limit' => 2,
-        'block_time' => 120,
-        'log_time' => 7200,
+        'attempt_limit' => 3,
+        'block_time' => 3600,
+        'log_time' => 2592000,
         'enable_url_change' => 1,
         'enable_ip_blocking' => 1,
         'alert_email' => '',
