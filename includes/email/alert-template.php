@@ -1,4 +1,5 @@
 <?php
+
 /**
  * BlockForce WP: Admin Alert Email Template
  */
@@ -9,7 +10,7 @@ if (!defined('ABSPATH')) {
 
 // This template is included from class-blockforce-wp-utils.php
 // It has access to the following variables:
-// 
+//
 // $user_ip           (string) The attacker's IP address
 // $new_login_url     (string) The new, secret login URL
 // $current_date_time (string) The date and time of the event

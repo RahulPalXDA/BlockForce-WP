@@ -6,7 +6,6 @@ if (!defined('ABSPATH')) {
 
 class BlockForce_WP_Admin
 {
-
     private $settings;
     private $core;
     private $text_domain = BFWP_TEXT_DOMAIN;
@@ -483,7 +482,7 @@ class BlockForce_WP_Admin
             <h2><?php esc_html_e('Current Login Status', $this->text_domain); ?></h2>
             <div
                 class="blockforce-status-box <?php echo $current_slug ? 'blockforce-status-active' : 'blockforce-status-default'; ?>">
-                <?php if ($current_slug): ?>
+                <?php if ($current_slug) : ?>
                     <p style="margin: 0 0 10px 0;">
                         <span style="color: #d63638; font-size: 18px;">●</span>
                         <strong
@@ -499,7 +498,7 @@ class BlockForce_WP_Admin
                         <span class="dashicons dashicons-info"></span>
                         <?php esc_html_e('Bookmark this URL! The default wp-login.php is now disabled.', $this->text_domain); ?>
                     </p>
-                <?php else: ?>
+                <?php else : ?>
                     <p style="margin: 0 0 10px 0;">
                         <span style="color: #00a32a; font-size: 18px;">●</span>
                         <strong
@@ -536,7 +535,7 @@ class BlockForce_WP_Admin
                 )
             );
 
-            if (!empty($blocked_ips)): ?>
+            if (!empty($blocked_ips)) : ?>
                 <form method="post" action="">
                     <?php wp_nonce_field('blockforce_bulk_unblock', '_wpnonce_bulk'); ?>
                     <div class="blockforce-bulk-actions">
@@ -557,7 +556,7 @@ class BlockForce_WP_Admin
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($blocked_ips as $blocked):
+                            <?php foreach ($blocked_ips as $blocked) :
                                 $ip = str_replace('bfwp_blocked_', '', $blocked->option_name);
                                 $parts = explode('|', $blocked->option_value);
 
@@ -578,13 +577,13 @@ class BlockForce_WP_Admin
                                     <td><strong><?php echo esc_html($ip); ?></strong></td>
                                     <td><?php echo esc_html(human_time_diff($blocked_time, time()) . ' ago'); ?></td>
                                     <td>
-                                        <?php if ($is_active): ?>
+                                        <?php if ($is_active) : ?>
                                             <span
                                                 class="blockforce-badge blockforce-badge-enabled"><?php esc_html_e('Active', $this->text_domain); ?></span>
                                             <span style="color: #646970; font-size: 12px; margin-left: 5px;">
                                                 (<?php echo esc_html(sprintf(__('%s left', $this->text_domain), human_time_diff(time(), $expires_at))); ?>)
                                             </span>
-                                        <?php else: ?>
+                                        <?php else : ?>
                                             <span
                                                 class="blockforce-badge blockforce-badge-disabled"><?php esc_html_e('Expired', $this->text_domain); ?></span>
                                         <?php endif; ?>
@@ -603,7 +602,7 @@ class BlockForce_WP_Admin
                         });
                     </script>
                 </form>
-            <?php else: ?>
+            <?php else : ?>
                 <p><?php esc_html_e('No IP addresses are currently blocked.', $this->text_domain); ?></p>
             <?php endif; ?>
         </div>
@@ -652,16 +651,16 @@ class BlockForce_WP_Admin
                 <div class="tablenav-pages">
                     <span
                         class="displaying-num"><?php echo sprintf(_n('%s item', '%s items', $total_items, $this->text_domain), number_format_i18n($total_items)); ?></span>
-                    <?php if ($total_pages > 1): ?>
+                    <?php if ($total_pages > 1) : ?>
                         <span class="pagination-links">
-                            <?php if ($current_page > 1): ?>
+                            <?php if ($current_page > 1) : ?>
                                 <a class="prev-page button"
                                     href="<?php echo esc_url(add_query_arg('paged', $current_page - 1)); ?>">‹</a>
                             <?php endif; ?>
                             <span class="paging-input">
                                 <?php echo sprintf(esc_html__('Page %1$d of %2$d', $this->text_domain), $current_page, $total_pages); ?>
                             </span>
-                            <?php if ($current_page < $total_pages): ?>
+                            <?php if ($current_page < $total_pages) : ?>
                                 <a class="next-page button"
                                     href="<?php echo esc_url(add_query_arg('paged', $current_page + 1)); ?>">›</a>
                             <?php endif; ?>
@@ -683,8 +682,8 @@ class BlockForce_WP_Admin
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (!empty($logs)): ?>
-                        <?php foreach ($logs as $log): ?>
+                    <?php if (!empty($logs)) : ?>
+                        <?php foreach ($logs as $log) : ?>
                             <tr>
                                 <th scope="row" class="check-column"><input type="checkbox" name="log_ids[]"
                                         value="<?php echo esc_attr($log->id); ?>"></th>
@@ -693,17 +692,17 @@ class BlockForce_WP_Admin
                                 <td><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($log->time))); ?></td>
                                 <td><?php echo esc_html(date_i18n(get_option('time_format'), strtotime($log->time))); ?></td>
                                 <td>
-                                    <?php if ($log->status == 'success'): ?>
+                                    <?php if ($log->status == 'success') : ?>
                                         <span
                                             style="color: #00a32a; font-weight: bold;"><?php esc_html_e('Success', $this->text_domain); ?></span>
-                                    <?php else: ?>
+                                    <?php else : ?>
                                         <span
                                             style="color: #d63638; font-weight: bold;"><?php esc_html_e('Failed', $this->text_domain); ?></span>
                                     <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                    <?php else: ?>
+                    <?php else : ?>
                         <tr>
                             <td colspan="6"><?php esc_html_e('No logs found.', $this->text_domain); ?></td>
                         </tr>

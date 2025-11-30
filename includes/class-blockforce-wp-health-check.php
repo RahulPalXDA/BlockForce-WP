@@ -1,4 +1,5 @@
 <?php
+
 /**
  * BlockForce WP Health Check Integration
  *
@@ -15,8 +16,8 @@ if (!defined('ABSPATH')) {
  *
  * Integrates with WordPress Site Health to provide security diagnostics.
  */
-class BlockForce_WP_Health_Check {
-
+class BlockForce_WP_Health_Check
+{
     /**
      * Plugin settings
      *
@@ -44,7 +45,8 @@ class BlockForce_WP_Health_Check {
      * @param array         $settings Plugin settings.
      * @param BlockForce_WP $core     Main plugin controller.
      */
-    public function __construct($settings, $core) {
+    public function __construct($settings, $core)
+    {
         $this->settings = $settings;
         $this->core = $core;
     }
@@ -54,7 +56,8 @@ class BlockForce_WP_Health_Check {
      *
      * @return void
      */
-    public function init_hooks() {
+    public function init_hooks()
+    {
         add_filter('site_status_tests', array($this, 'add_health_check_tests'));
         add_filter('debug_information', array($this, 'add_debug_information'));
     }
@@ -65,7 +68,8 @@ class BlockForce_WP_Health_Check {
      * @param array $tests Existing health check tests.
      * @return array Modified tests array.
      */
-    public function add_health_check_tests($tests) {
+    public function add_health_check_tests($tests)
+    {
         $tests['direct']['blockforce_email_delivery'] = array(
             'label' => __('BlockForce WP Email Delivery', $this->text_domain),
             'test'  => array($this, 'test_email_delivery'),
@@ -94,7 +98,8 @@ class BlockForce_WP_Health_Check {
      *
      * @return array Test result.
      */
-    public function test_email_delivery() {
+    public function test_email_delivery()
+    {
         $result = array(
             'label'       => __('BlockForce WP can send security alerts', $this->text_domain),
             'status'      => 'good',
@@ -111,8 +116,8 @@ class BlockForce_WP_Health_Check {
         );
 
         // Check if email is configured
-        $alert_email = isset($this->settings['alert_email']) && !empty($this->settings['alert_email']) 
-            ? $this->settings['alert_email'] 
+        $alert_email = isset($this->settings['alert_email']) && !empty($this->settings['alert_email'])
+            ? $this->settings['alert_email']
             : get_option('admin_email');
 
         if (empty($alert_email) || !is_email($alert_email)) {
@@ -143,7 +148,8 @@ class BlockForce_WP_Health_Check {
      *
      * @return array Test result.
      */
-    public function test_rewrite_rules() {
+    public function test_rewrite_rules()
+    {
         $result = array(
             'label'       => __('BlockForce WP rewrite rules are working', $this->text_domain),
             'status'      => 'good',
@@ -160,14 +166,14 @@ class BlockForce_WP_Health_Check {
         );
 
         $current_slug = $this->core->login_url->get_login_slug();
-        
+
         if ($current_slug) {
             global $wp_rewrite;
             $rules = get_option('rewrite_rules');
-            
+
             $expected_rule = '^' . preg_quote($current_slug, '/') . '/?$';
             $rule_exists = false;
-            
+
             if (is_array($rules)) {
                 foreach ($rules as $pattern => $rewrite) {
                     if ($pattern === $expected_rule) {
@@ -176,7 +182,7 @@ class BlockForce_WP_Health_Check {
                     }
                 }
             }
-            
+
             if (!$rule_exists) {
                 $result['status'] = 'recommended';
                 $result['label'] = __('BlockForce WP rewrite rules may need refresh', $this->text_domain);
@@ -206,7 +212,8 @@ class BlockForce_WP_Health_Check {
      *
      * @return array Test result.
      */
-    public function test_configuration() {
+    public function test_configuration()
+    {
         $result = array(
             'label'       => __('BlockForce WP is properly configured', $this->text_domain),
             'status'      => 'good',
@@ -245,7 +252,7 @@ class BlockForce_WP_Health_Check {
         // Check if at least one protection method is enabled
         $ip_blocking = isset($this->settings['enable_ip_blocking']) ? $this->settings['enable_ip_blocking'] : 0;
         $url_change = isset($this->settings['enable_url_change']) ? $this->settings['enable_url_change'] : 0;
-        
+
         if (!$ip_blocking && !$url_change) {
             $issues[] = __('No protection methods are enabled. Enable IP Blocking or Auto URL Change.', $this->text_domain);
         }
@@ -274,7 +281,8 @@ class BlockForce_WP_Health_Check {
      *
      * @return array Test result.
      */
-    public function test_security_status() {
+    public function test_security_status()
+    {
         $result = array(
             'label'       => __('BlockForce WP is protecting your site', $this->text_domain),
             'status'      => 'good',
@@ -330,9 +338,10 @@ class BlockForce_WP_Health_Check {
      * @param array $info Existing debug information.
      * @return array Modified debug information.
      */
-    public function add_debug_information($info) {
+    public function add_debug_information($info)
+    {
         $current_slug = $this->core->login_url->get_login_slug();
-        
+
         $info['blockforce-wp'] = array(
             'label'  => __('BlockForce WP', $this->text_domain),
             'fields' => array(
@@ -351,14 +360,14 @@ class BlockForce_WP_Health_Check {
                 ),
                 'ip_blocking' => array(
                     'label' => __('IP Blocking', $this->text_domain),
-                    'value' => isset($this->settings['enable_ip_blocking']) && $this->settings['enable_ip_blocking'] 
-                        ? __('Enabled', $this->text_domain) 
+                    'value' => isset($this->settings['enable_ip_blocking']) && $this->settings['enable_ip_blocking']
+                        ? __('Enabled', $this->text_domain)
                         : __('Disabled', $this->text_domain),
                 ),
                 'url_change' => array(
                     'label' => __('Auto URL Change', $this->text_domain),
-                    'value' => isset($this->settings['enable_url_change']) && $this->settings['enable_url_change'] 
-                        ? __('Enabled', $this->text_domain) 
+                    'value' => isset($this->settings['enable_url_change']) && $this->settings['enable_url_change']
+                        ? __('Enabled', $this->text_domain)
                         : __('Disabled', $this->text_domain),
                 ),
                 'attempt_limit' => array(
@@ -375,8 +384,8 @@ class BlockForce_WP_Health_Check {
                 ),
                 'alert_email' => array(
                     'label'   => __('Alert Email', $this->text_domain),
-                    'value'   => isset($this->settings['alert_email']) && !empty($this->settings['alert_email']) 
-                        ? $this->settings['alert_email'] 
+                    'value'   => isset($this->settings['alert_email']) && !empty($this->settings['alert_email'])
+                        ? $this->settings['alert_email']
                         : get_option('admin_email'),
                     'private' => true,
                 ),

@@ -6,7 +6,6 @@ if (!defined('ABSPATH')) {
 
 class BlockForce_WP_Utils
 {
-
     /**
      * Get the current Unix timestamp.
      *
@@ -35,7 +34,7 @@ class BlockForce_WP_Utils
 
     /**
      * Generate a random slug for the login URL using cryptographically secure randomness.
-     * 
+     *
      * @return string A 12-character hexadecimal string (cryptographically secure)
      */
     public static function generate_random_slug()

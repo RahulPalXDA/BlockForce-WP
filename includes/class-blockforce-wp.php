@@ -6,7 +6,6 @@ if (!defined('ABSPATH')) {
 
 class BlockForce_WP
 {
-
     public $settings;
     public $security;
     public $login_url;

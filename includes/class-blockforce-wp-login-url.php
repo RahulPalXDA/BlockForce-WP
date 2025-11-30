@@ -6,7 +6,6 @@ if (!defined('ABSPATH')) {
 
 class BlockForce_WP_Login_Url
 {
-
     private $settings;
     private $core;
     private $login_slug;
@@ -156,7 +155,7 @@ class BlockForce_WP_Login_Url
 
     /**
      * Remove default WordPress redirects that might expose the secret URL.
-     * 
+     *
      * WordPress by default redirects /login, /admin, /dashboard to the login page.
      * We want to stop this behavior when a custom slug is active.
      */

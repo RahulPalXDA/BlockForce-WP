@@ -1,4 +1,5 @@
 <?php
+
 /**
  * BlockForce WP Dashboard Widget
  *
@@ -17,7 +18,6 @@ if (!defined('ABSPATH')) {
  */
 class BlockForce_WP_Dashboard
 {
-
     /**
      * Plugin settings
      *
@@ -270,10 +270,10 @@ class BlockForce_WP_Dashboard
                 <!-- Current Login URL -->
                 <div class="blockforce-login-url-box">
                     <strong>
-                        <?php if ($current_slug): ?>
+                        <?php if ($current_slug) : ?>
                             <span class="dashicons dashicons-lock" style="color: #d63638;"></span>
                             <?php esc_html_e('Secret Login URL:', $this->text_domain); ?>
-                        <?php else: ?>
+                        <?php else : ?>
                             <span class="dashicons dashicons-admin-home" style="color: #00a32a;"></span>
                             <?php esc_html_e('Default Login URL:', $this->text_domain); ?>
                         <?php endif; ?>

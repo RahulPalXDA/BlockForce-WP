@@ -6,7 +6,6 @@ if (!defined('ABSPATH')) {
 
 class BlockForce_WP_Security
 {
-
     private $settings;
     private $core; // Main plugin controller
 
@@ -115,7 +114,7 @@ class BlockForce_WP_Security
      * Handles the logic for changing the URL and sending the alert.
      * IMPORTANT: Only changes the login URL if the email is sent successfully.
      * This prevents admin lockout if SMTP/email fails.
-     * 
+     *
      * @param string $username The username that was attempted
      * @param string $user_ip The IP address of the attacker
      * @param int $attempt_count Number of failed attempts

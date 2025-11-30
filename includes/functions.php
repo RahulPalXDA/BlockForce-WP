@@ -3,6 +3,7 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+// phpcs:disable PSR1.Files.SideEffects
 
 /**
  * Cleanup on plugin activation
