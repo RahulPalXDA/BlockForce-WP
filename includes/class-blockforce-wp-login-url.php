@@ -92,7 +92,16 @@ class BlockForce_WP_Login_Url
         global $wp_query;
         $wp_query->set_404();
         status_header(404);
-        get_template_part(404);
+        nocache_headers();
+
+        $template = get_404_template();
+        if ($template) {
+            include($template);
+        } else {
+            // Fallback if theme has no 404.php
+            echo '<!DOCTYPE html><html><head><title>404 Not Found</title></head><body><h1>404 Not Found</h1><p>The page you are looking for does not exist.</p></body></html>';
+        }
+        exit;
     }
 
     public function handle_custom_login_url()
