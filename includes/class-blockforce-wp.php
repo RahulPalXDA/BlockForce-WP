@@ -13,6 +13,7 @@ class BlockForce_WP
     public $features;
     public $dashboard;
     public $health_check;
+    public $blocklist;
     public $basename;
 
     private $default_settings = array(
@@ -36,6 +37,7 @@ class BlockForce_WP
         $this->features = new BlockForce_WP_Features($this->settings, $this);
         $this->dashboard = new BlockForce_WP_Dashboard($this->settings, $this);
         $this->health_check = new BlockForce_WP_Health_Check($this->settings, $this);
+        $this->blocklist = new BlockForce_WP_Blocklist($this->settings, $this);
 
         // Initialize hooks for each module
         $this->security->init_hooks();
@@ -44,6 +46,7 @@ class BlockForce_WP
         $this->features->init_hooks();
         $this->dashboard->init_hooks();
         $this->health_check->init_hooks();
+        $this->blocklist->init_hooks();
     }
     public static function activate()
     {
