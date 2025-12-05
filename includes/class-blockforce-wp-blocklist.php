@@ -101,42 +101,37 @@ class BlockForce_WP_Blocklist
         $ips_to_add = array();
 
         foreach ($lines as $line) {
-            // Skip comments and CIDR notation (for simplicity, we only block single IPs for now or would need a CIDR matcher)
-            // FireHol Level 1 contains mostly single IPs and CIDRs
-            // For this basic MVP implementation, we will only extract single IPs to keep SQL simple
-            // Real implementation should handle CIDR.
-
             $line = trim($line);
             if (empty($line) || strpos($line, '#') === 0) {
                 continue;
             }
 
-            // If it's a CIDR, we skip for MVP (complex math required for SQL lookup) or exact match
-            // Creating a robust CIDR matcher in pure SQL/PHP is heavy.
-            // Let's filter for just plain IPs for minimal risk 
             if (filter_var($line, FILTER_VALIDATE_IP)) {
                 $ips_to_add[] = $line;
             }
         }
 
         if (!empty($ips_to_add)) {
-            $this->save_ips_to_db($ips_to_add);
+            $this->save_auto_ips_to_db($ips_to_add);
         }
+
+        // Update sync status
+        update_option('blockforce_blocklist_last_sync', current_time('mysql'));
+        update_option('blockforce_blocklist_count', count($ips_to_add));
     }
 
     /**
-     * Save IPs to database efficiently
+     * Save auto-fetched IPs to database efficiently, preserving manual entries
      */
-    private function save_ips_to_db($ips)
+    private function save_auto_ips_to_db($ips)
     {
         global $wpdb;
 
-        // Truncate table first - we want a fresh list
-        $wpdb->query("TRUNCATE TABLE {$this->table_name}");
+        // Delete only 'auto' source IPs
+        $wpdb->query("DELETE FROM {$this->table_name} WHERE source = 'auto'");
 
         // Bulk insert
         $values = array();
-        $placeholders = array();
 
         // Insert in chunks of 500
         $chunk_size = 500;
@@ -145,15 +140,122 @@ class BlockForce_WP_Blocklist
         foreach ($chunks as $chunk) {
             $values_sql = array();
             foreach ($chunk as $ip) {
-                $values_sql[] = $wpdb->prepare("(%s)", $ip);
+                // Prepared statement for each value pair
+                $values_sql[] = $wpdb->prepare("(%s, 'auto')", $ip);
             }
 
             if (!empty($values_sql)) {
-                $sql = "INSERT IGNORE INTO {$this->table_name} (ip) VALUES " . implode(',', $values_sql);
+                $sql = "INSERT IGNORE INTO {$this->table_name} (ip, source) VALUES " . implode(',', $values_sql);
                 $wpdb->query($sql);
             }
         }
 
         error_log('BlockForce WP: Global blocklist updated with ' . count($ips) . ' IPs.');
+    }
+
+    /**
+     * Add a manual IP to the blocklist
+     */
+    public function add_manual_ip($ip)
+    {
+        global $wpdb;
+
+        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+            return new WP_Error('invalid_ip', __('Invalid IP address.', 'blockforce-wp'));
+        }
+
+        // Check availability
+        if ($this->is_ip_in_blocklist($ip)) {
+            return new WP_Error('duplicate_ip', __('IP already in blocklist.', 'blockforce-wp'));
+        }
+
+        $result = $wpdb->insert(
+            $this->table_name,
+            array(
+                'ip' => $ip,
+                'source' => 'manual',
+                'created_at' => current_time('mysql')
+            ),
+            array('%s', '%s', '%s')
+        );
+
+        if ($result === false) {
+            return new WP_Error('db_error', __('Database error.', 'blockforce-wp'));
+        }
+
+        return true;
+    }
+
+    /**
+     * Delete a manual IP from the blocklist
+     */
+    public function delete_manual_ip($id)
+    {
+        global $wpdb;
+
+        // Only allow deleting manual entries for safety via this method
+        // (Auto entries are managed by sync)
+        $result = $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM {$this->table_name} WHERE id = %d AND source = 'manual'",
+                $id
+            )
+        );
+
+        return $result !== false;
+    }
+
+    /**
+     * Get IPs for the admin table with pagination and search
+     */
+    public function get_ips($args = array())
+    {
+        global $wpdb;
+
+        $defaults = array(
+            'limit' => 20,
+            'offset' => 0,
+            'search' => '',
+            'orderby' => 'created_at',
+            'order' => 'DESC'
+        );
+
+        $args = wp_parse_args($args, $defaults);
+
+        // Sanitize
+        $limit = absint($args['limit']);
+        $offset = absint($args['offset']);
+        $orderby = in_array($args['orderby'], array('ip', 'source', 'created_at')) ? $args['orderby'] : 'created_at';
+        $order = $args['order'] === 'ASC' ? 'ASC' : 'DESC';
+
+        $where = "1=1";
+        if (!empty($args['search'])) {
+            $like = '%' . $wpdb->esc_like($args['search']) . '%';
+            $where .= $wpdb->prepare(" AND ip LIKE %s", $like);
+        }
+
+        // Get total count
+        $total = $wpdb->get_var("SELECT COUNT(id) FROM {$this->table_name} WHERE $where");
+
+        // Get items
+        $sql = "SELECT * FROM {$this->table_name} WHERE $where ORDER BY $orderby $order LIMIT $limit OFFSET $offset";
+        $items = $wpdb->get_results($sql, ARRAY_A);
+
+        return array(
+            'items' => $items,
+            'total' => $total,
+            'pages' => ceil($total / $limit)
+        );
+    }
+
+    /**
+     * Get last sync status
+     */
+    public function get_sync_status()
+    {
+        return array(
+            'last_sync' => get_option('blockforce_blocklist_last_sync', __('Never', 'blockforce-wp')),
+            'count' => get_option('blockforce_blocklist_count', 0)
+        );
     }
 }

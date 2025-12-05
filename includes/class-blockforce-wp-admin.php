@@ -24,6 +24,7 @@ class BlockForce_WP_Admin
         add_action('admin_init', array($this, 'handle_login_url_reset'));
         add_action('admin_init', array($this, 'handle_test_email'));
         add_action('admin_init', array($this, 'handle_bulk_unblock'));
+        add_action('admin_init', array($this, 'handle_blocklist_action'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
         add_action('update_option_blockforce_settings', array($this, 'on_settings_update'), 10, 2);
         add_filter('plugin_action_links_' . $this->core->basename, array($this, 'add_settings_link'));
@@ -488,6 +489,8 @@ class BlockForce_WP_Admin
                     class="nav-tab <?php echo $active_tab == 'logs' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e('Activity Log', $this->text_domain); ?></a>
                 <a href="?page=blockforce-wp&tab=settings"
                     class="nav-tab <?php echo $active_tab == 'settings' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e('Settings', $this->text_domain); ?></a>
+                <a href="?page=blockforce-wp&tab=blocklist"
+                    class="nav-tab <?php echo $active_tab == 'blocklist' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e('Blocklist Manager', $this->text_domain); ?></a>
                 <a href="?page=blockforce-wp&tab=reset"
                     class="nav-tab <?php echo $active_tab == 'reset' ? 'nav-tab-active' : ''; ?>"><?php esc_html_e('Reset Plugin', $this->text_domain); ?></a>
             </h2>
@@ -500,6 +503,8 @@ class BlockForce_WP_Admin
                     $this->display_logs_tab();
                 } elseif ($active_tab == 'settings') {
                     $this->display_settings_tab();
+                } elseif ($active_tab == 'blocklist') {
+                    $this->display_blocklist_tab();
                 } elseif ($active_tab == 'reset') {
                     $this->display_reset_tab();
                 }
@@ -878,6 +883,89 @@ class BlockForce_WP_Admin
     /**
      * Handle login URL reset only
      */
+    public function handle_blocklist_action()
+    {
+        if (!isset($_GET['page']) || $_GET['page'] !== 'blockforce-wp') {
+            return;
+        }
+
+        if (!is_admin() || !current_user_can('manage_options')) {
+            return;
+        }
+
+        // Handle Sync
+        if (isset($_POST['bfwp_blocklist_sync'])) {
+            check_admin_referer('bfwp_blocklist_sync', 'bfwp_blocklist_nonce');
+
+            // Check if class exists and is loaded (it should be)
+            if (class_exists('BlockForce_WP_Blocklist')) {
+                $blocklist = new BlockForce_WP_Blocklist($this->settings, $this->core);
+                $blocklist->update_blocklist();
+
+                add_settings_error(
+                    'blockforce_settings',
+                    'sync_success',
+                    __('Global blocklist synchronized successfully.', $this->text_domain),
+                    'updated'
+                );
+            }
+        }
+
+        // Handle Add Manual IP
+        if (isset($_POST['bfwp_blocklist_add']) && !empty($_POST['manual_ip'])) {
+            check_admin_referer('bfwp_blocklist_action', 'bfwp_blocklist_nonce');
+
+            $ip = sanitize_text_field($_POST['manual_ip']);
+            $blocklist = new BlockForce_WP_Blocklist($this->settings, $this->core);
+            $result = $blocklist->add_manual_ip($ip);
+
+            if (is_wp_error($result)) {
+                add_settings_error(
+                    'blockforce_settings',
+                    'add_error',
+                    $result->get_error_message(),
+                    'error'
+                );
+            } else {
+                add_settings_error(
+                    'blockforce_settings',
+                    'add_success',
+                    sprintf(__('IP %s added to blocklist.', $this->text_domain), esc_html($ip)),
+                    'updated'
+                );
+            }
+        }
+
+        // Handle Delete Manual IP
+        if (isset($_GET['action']) && $_GET['action'] === 'delete_ip' && isset($_GET['id'])) {
+            check_admin_referer('delete_ip_' . $_GET['id']);
+
+            $id = absint($_GET['id']);
+            $blocklist = new BlockForce_WP_Blocklist($this->settings, $this->core);
+            $success = $blocklist->delete_manual_ip($id);
+
+            if ($success) {
+                add_settings_error(
+                    'blockforce_settings',
+                    'delete_success',
+                    __('IP removed from blocklist.', $this->text_domain),
+                    'updated'
+                );
+            } else {
+                add_settings_error(
+                    'blockforce_settings',
+                    'delete_error',
+                    __('Failed to remove IP or IP is not a manual entry.', $this->text_domain),
+                    'error'
+                );
+            }
+
+            // Remove args from URL to prevent re-action
+            wp_safe_redirect(remove_query_arg(array('action', 'id', '_wpnonce')));
+            exit;
+        }
+    }
+
     public function handle_login_url_reset()
     {
         // Ensure we are on the specific plugin page
@@ -1040,6 +1128,189 @@ class BlockForce_WP_Admin
                     <?php esc_html_e('Reset Plugin', $this->text_domain); ?>
                 </a>
             </p>
+        </div>
+        <?php
+    }
+    private function display_blocklist_tab()
+    {
+        if (!class_exists('BlockForce_WP_Blocklist')) {
+            echo '<div class="error"><p>' . esc_html__('Blocklist module not loaded.', $this->text_domain) . '</p></div>';
+            return;
+        }
+
+        $blocklist = new BlockForce_WP_Blocklist($this->settings, $this->core);
+        $sync_status = $blocklist->get_sync_status();
+
+        // Handle Search and Pagination
+        $paged = isset($_GET['paged']) ? absint($_GET['paged']) : 1;
+        $paged = max(1, $paged);
+        $search_query = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
+        $per_page = 50;
+
+        $args = array(
+            'limit' => $per_page,
+            'offset' => ($paged - 1) * $per_page,
+            'search' => $search_query
+        );
+
+        $data = $blocklist->get_ips($args);
+        $total_pages = $data['pages'];
+
+        $sync_url = wp_nonce_url(admin_url('admin-post.php'), 'bfwp_blocklist_sync', 'bfwp_blocklist_nonce');
+
+        ?>
+        <div class="blockforce-card">
+            <h2><?php esc_html_e('Global Blocklist Manager', $this->text_domain); ?></h2>
+            <p><?php esc_html_e('Manage and view the global blocklist database.', $this->text_domain); ?></p>
+
+            <?php settings_errors('blockforce_settings'); ?>
+
+            <!-- Stats Bar -->
+            <div class="blockforce-status-box blockforce-status-default"
+                style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <strong><?php esc_html_e('Total IPs:', $this->text_domain); ?></strong>
+                    <?php echo number_format_i18n($data['total']); ?>
+                    <span style="margin: 0 10px; color: #ccc;">|</span>
+                    <strong><?php esc_html_e('Last Sync:', $this->text_domain); ?></strong>
+                    <?php echo esc_html($sync_status['last_sync']); ?>
+                    <?php if ($sync_status['count'] > 0): ?>
+                        <span
+                            style="color: #666; font-size: 12px;">(<?php echo sprintf(__('%s IPs fetched', $this->text_domain), number_format_i18n($sync_status['count'])); ?>)</span>
+                    <?php endif; ?>
+                </div>
+
+                <form method="post" action="">
+                    <?php wp_nonce_field('bfwp_blocklist_sync', 'bfwp_blocklist_nonce'); ?>
+                    <button type="submit" name="bfwp_blocklist_sync" class="button button-secondary">
+                        <span class="dashicons dashicons-update" style="margin-top: 3px;"></span>
+                        <?php esc_html_e('Sync Now', $this->text_domain); ?>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Add IP Form -->
+            <div style="background: #f9f9f9; padding: 15px; border: 1px solid #ddd; margin-bottom: 20px;">
+                <form method="post" action="" style="display: flex; align-items: center; gap: 10px;">
+                    <?php wp_nonce_field('bfwp_blocklist_action', 'bfwp_blocklist_nonce'); ?>
+
+                    <label><strong><?php esc_html_e('Add Manual IP:', $this->text_domain); ?></strong></label>
+                    <input type="text" name="manual_ip" placeholder="192.168.1.1" required style="min-width: 250px;">
+
+                    <button type="submit" name="bfwp_blocklist_add" class="button button-primary">
+                        <?php esc_html_e('Add to Blocklist', $this->text_domain); ?>
+                    </button>
+                    <span class="description"
+                        style="margin-left: 10px;"><?php esc_html_e('Manually added IPs are NOT removed during daily sync.', $this->text_domain); ?></span>
+                </form>
+            </div>
+
+            <!-- Search -->
+            <form method="get" action="">
+                <input type="hidden" name="page" value="blockforce-wp">
+                <input type="hidden" name="tab" value="blocklist">
+                <p class="search-box">
+                    <label class="screen-reader-text"
+                        for="tag-search-input"><?php esc_html_e('Search IPs:', $this->text_domain); ?></label>
+                    <input type="search" id="tag-search-input" name="s" value="<?php echo esc_attr($search_query); ?>">
+                    <input type="submit" id="search-submit" class="button"
+                        value="<?php esc_attr_e('Search IPs', $this->text_domain); ?>">
+                </p>
+            </form>
+
+            <div class="tablenav top">
+                <div class="alignleft actions bulkactions">
+                    <!-- Future Bulk Actions could go here -->
+                </div>
+                <div class="tablenav-pages">
+                    <span
+                        class="displaying-num"><?php echo sprintf(_n('%s item', '%s items', $data['total'], $this->text_domain), number_format_i18n($data['total'])); ?></span>
+                    <?php
+                    $page_links = paginate_links(array(
+                        'base' => add_query_arg('paged', '%#%'),
+                        'format' => '',
+                        'prev_text' => __('&laquo;', $this->text_domain),
+                        'next_text' => __('&raquo;', $this->text_domain),
+                        'total' => $total_pages,
+                        'current' => $paged
+                    ));
+
+                    if ($page_links) {
+                        echo '<span class="pagination-links">' . $page_links . '</span>';
+                    }
+                    ?>
+                </div>
+            </div>
+
+            <table class="wp-list-table widefat fixed striped table-view-list">
+                <thead>
+                    <tr>
+                        <th style="width: 40%;"><?php esc_html_e('IP Address', $this->text_domain); ?></th>
+                        <th style="width: 20%;"><?php esc_html_e('Source', $this->text_domain); ?></th>
+                        <th style="width: 25%;"><?php esc_html_e('Date Added', $this->text_domain); ?></th>
+                        <th style="width: 15%;"><?php esc_html_e('Actions', $this->text_domain); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($data['items'])): ?>
+                        <?php foreach ($data['items'] as $item): ?>
+                            <tr>
+                                <td>
+                                    <strong><?php echo esc_html($item['ip']); ?></strong>
+                                </td>
+                                <td>
+                                    <?php if ($item['source'] === 'manual'): ?>
+                                        <span
+                                            class="blockforce-badge blockforce-badge-enabled"><?php esc_html_e('MANUAL', $this->text_domain); ?></span>
+                                    <?php else: ?>
+                                        <span class="blockforce-badge"
+                                            style="background: #eee; color: #666; border-color: #ddd;"><?php esc_html_e('AUTO', $this->text_domain); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <?php echo esc_html($item['created_at']); ?>
+                                </td>
+                                <td>
+                                    <?php if ($item['source'] === 'manual'):
+                                        $delete_url = wp_nonce_url(
+                                            add_query_arg(array(
+                                                'page' => 'blockforce-wp',
+                                                'tab' => 'blocklist',
+                                                'action' => 'delete_ip',
+                                                'id' => $item['id']
+                                            ), admin_url('options-general.php')),
+                                            'delete_ip_' . $item['id']
+                                        );
+                                        ?>
+                                        <a href="<?php echo esc_url($delete_url); ?>"
+                                            onclick="return confirm('<?php esc_attr_e('Delete this IP?', $this->text_domain); ?>')"
+                                            style="color: #a00;">
+                                            <?php esc_html_e('Delete', $this->text_domain); ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span style="color: #ccc;"><?php esc_html_e('Managed by Sync', $this->text_domain); ?></span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="4"><?php esc_html_e('No IPs found in the blocklist.', $this->text_domain); ?></td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+
+            <div class="tablenav bottom">
+                <div class="tablenav-pages">
+                    <?php
+                    if ($page_links) {
+                        echo '<span class="pagination-links">' . $page_links . '</span>';
+                    }
+                    ?>
+                </div>
+            </div>
+
         </div>
         <?php
     }

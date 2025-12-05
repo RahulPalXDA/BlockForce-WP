@@ -60,7 +60,19 @@ class BlockForce_WP
             PRIMARY KEY  (id)
         ) $charset_collate;";
 
+        $blocklist_table = $wpdb->prefix . 'bfwp_blocklist';
+        $sql_blocklist = "CREATE TABLE $blocklist_table (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            ip varchar(100) NOT NULL,
+            source varchar(20) DEFAULT 'auto' NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY ip (ip),
+            KEY source (source)
+        ) $charset_collate;";
+
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
+        dbDelta($sql_blocklist);
     }
 }
