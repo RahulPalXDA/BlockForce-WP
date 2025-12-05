@@ -216,6 +216,7 @@ class BlockForce_WP_Blocklist
             'limit' => 20,
             'offset' => 0,
             'search' => '',
+            'source' => '', // 'manual', 'auto', or empty for all
             'orderby' => 'created_at',
             'order' => 'DESC'
         );
@@ -229,6 +230,12 @@ class BlockForce_WP_Blocklist
         $order = $args['order'] === 'ASC' ? 'ASC' : 'DESC';
 
         $where = "1=1";
+
+        // Source filter
+        if (!empty($args['source']) && in_array($args['source'], array('manual', 'auto'))) {
+            $where .= $wpdb->prepare(" AND source = %s", $args['source']);
+        }
+
         if (!empty($args['search'])) {
             $like = '%' . $wpdb->esc_like($args['search']) . '%';
             $where .= $wpdb->prepare(" AND ip LIKE %s", $like);

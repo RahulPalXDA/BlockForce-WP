@@ -1145,12 +1145,14 @@ class BlockForce_WP_Admin
         $paged = isset($_GET['paged']) ? absint($_GET['paged']) : 1;
         $paged = max(1, $paged);
         $search_query = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
+        $source_filter = isset($_GET['source_filter']) ? sanitize_key($_GET['source_filter']) : '';
         $per_page = 50;
 
         $args = array(
             'limit' => $per_page,
             'offset' => ($paged - 1) * $per_page,
-            'search' => $search_query
+            'search' => $search_query,
+            'source' => $source_filter
         );
 
         $data = $blocklist->get_ips($args);
@@ -1205,17 +1207,35 @@ class BlockForce_WP_Admin
                 </form>
             </div>
 
-            <!-- Search -->
+            <!-- Search and Filter -->
             <form method="get" action="">
                 <input type="hidden" name="page" value="blockforce-wp">
                 <input type="hidden" name="tab" value="blocklist">
-                <p class="search-box">
-                    <label class="screen-reader-text"
-                        for="tag-search-input"><?php esc_html_e('Search IPs:', $this->text_domain); ?></label>
-                    <input type="search" id="tag-search-input" name="s" value="<?php echo esc_attr($search_query); ?>">
-                    <input type="submit" id="search-submit" class="button"
-                        value="<?php esc_attr_e('Search IPs', $this->text_domain); ?>">
-                </p>
+                <div class="tablenav top" style="margin-top: 0;">
+                    <div class="alignleft actions">
+                        <select name="source_filter">
+                            <option value="" <?php selected($source_filter, ''); ?>>
+                                <?php esc_html_e('All Sources', $this->text_domain); ?>
+                            </option>
+                            <option value="manual" <?php selected($source_filter, 'manual'); ?>>
+                                <?php esc_html_e('Manual', $this->text_domain); ?>
+                            </option>
+                            <option value="auto" <?php selected($source_filter, 'auto'); ?>>
+                                <?php esc_html_e('Auto (Sync)', $this->text_domain); ?>
+                            </option>
+                        </select>
+                        <input type="submit" name="filter_action" id="post-query-submit" class="button"
+                            value="<?php esc_attr_e('Filter', $this->text_domain); ?>">
+                    </div>
+
+                    <p class="search-box">
+                        <label class="screen-reader-text"
+                            for="tag-search-input"><?php esc_html_e('Search IPs:', $this->text_domain); ?></label>
+                        <input type="search" id="tag-search-input" name="s" value="<?php echo esc_attr($search_query); ?>">
+                        <input type="submit" id="search-submit" class="button"
+                            value="<?php esc_attr_e('Search IPs', $this->text_domain); ?>">
+                    </p>
+                </div>
             </form>
 
             <div class="tablenav top">
@@ -1272,13 +1292,21 @@ class BlockForce_WP_Admin
                                 </td>
                                 <td>
                                     <?php if ($item['source'] === 'manual'):
+                                        $del_args = array(
+                                            'page' => 'blockforce-wp',
+                                            'tab' => 'blocklist',
+                                            'action' => 'delete_ip',
+                                            'id' => $item['id']
+                                        );
+                                        if (!empty($search_query)) {
+                                            $del_args['s'] = $search_query;
+                                        }
+                                        if (!empty($source_filter)) {
+                                            $del_args['source_filter'] = $source_filter;
+                                        }
+
                                         $delete_url = wp_nonce_url(
-                                            add_query_arg(array(
-                                                'page' => 'blockforce-wp',
-                                                'tab' => 'blocklist',
-                                                'action' => 'delete_ip',
-                                                'id' => $item['id']
-                                            ), admin_url('options-general.php')),
+                                            add_query_arg($del_args, admin_url('options-general.php')),
                                             'delete_ip_' . $item['id']
                                         );
                                         ?>
