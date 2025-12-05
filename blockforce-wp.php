@@ -31,15 +31,19 @@ define('BFWP_BASENAME', plugin_basename(__FILE__));
 // Include helper functions for activation/deactivation
 require_once BFWP_PATH . 'includes/functions.php';
 
-// Activation wrapper (loads class before calling activate)
-function blockforce_wp_activate()
+// Full activation handler (called by register_activation_hook)
+function blockforce_wp_full_activate()
 {
+    // First, create database tables (from class)
     require_once BFWP_PATH . 'includes/class-blockforce-wp.php';
     BlockForce_WP::activate();
+
+    // Then set up options and cron (from functions.php)
+    blockforce_wp_activate();
 }
 
 // Register activation and deactivation hooks
-register_activation_hook(__FILE__, 'blockforce_wp_activate');
+register_activation_hook(__FILE__, 'blockforce_wp_full_activate');
 register_deactivation_hook(__FILE__, 'blockforce_wp_deactivate');
 
 /**
