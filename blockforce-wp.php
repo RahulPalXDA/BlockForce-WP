@@ -41,6 +41,7 @@ require_once BFWP_PATH . 'includes/class-blockforce-wp-admin.php';
 require_once BFWP_PATH . 'includes/class-blockforce-wp-features.php';
 require_once BFWP_PATH . 'includes/class-blockforce-wp-dashboard.php';
 require_once BFWP_PATH . 'includes/class-blockforce-wp-health-check.php';
+require_once BFWP_PATH . 'includes/class-blockforce-wp-blocklist.php';
 require_once BFWP_PATH . 'includes/class-blockforce-wp.php';
 
 // Initialize the main plugin controller

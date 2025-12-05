@@ -18,6 +18,7 @@ function blockforce_wp_activate()
             'log_time' => 7200,
             'enable_url_change' => 1,
             'enable_ip_blocking' => 1,
+            'enable_global_blocklist' => 0,
             'alert_email' => '',
         );
         update_option('blockforce_settings', $default_settings);
@@ -31,6 +32,11 @@ function blockforce_wp_activate()
         wp_schedule_event(time(), 'hourly', 'blockforce_cleanup');
     }
 
+    // Schedule blocklist update
+    if (!wp_next_scheduled('blockforce_daily_blocklist_update')) {
+        wp_schedule_event(time(), 'daily', 'blockforce_daily_blocklist_update');
+    }
+
     // Flush rewrite rules
     flush_rewrite_rules(false);
 }
@@ -42,6 +48,7 @@ function blockforce_wp_deactivate()
 {
     // Clear scheduled events
     wp_clear_scheduled_hook('blockforce_cleanup');
+    wp_clear_scheduled_hook('blockforce_daily_blocklist_update');
 
     // Remove custom rewrite rules
     flush_rewrite_rules();
@@ -68,6 +75,11 @@ function blockforce_wp_uninstall_cleanup()
 
     // Clear scheduled events
     wp_clear_scheduled_hook('blockforce_cleanup');
+    wp_clear_scheduled_hook('blockforce_daily_blocklist_update');
+
+    // Drop blocklist table
+    $blocklist_table = $wpdb->prefix . 'bfwp_blocklist';
+    $wpdb->query("DROP TABLE IF EXISTS $blocklist_table");
 
     // Clear all transients
     blockforce_wp_clear_all_transients();

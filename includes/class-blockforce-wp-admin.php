@@ -304,8 +304,29 @@ class BlockForce_WP_Admin
         add_settings_field('attempt_limit', __('Maximum Failed Attempts', $this->text_domain), array($this, 'attempt_limit_render'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('block_time', __('IP Block Duration', $this->text_domain), array($this, 'block_time_render'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('log_time', __('Attack Monitoring Window', $this->text_domain), array($this, 'log_time_render'), 'blockforce_settings', 'blockforce_main_section');
-        add_settings_field('enable_ip_blocking', __('Enable IP Blocking', $this->text_domain), array($this, 'enable_ip_blocking_render'), 'blockforce_settings', 'blockforce_main_section');
-        add_settings_field('enable_url_change', __('Enable Auto URL Change', $this->text_domain), array($this, 'enable_url_change_render'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field(
+            'enable_ip_blocking',
+            __('IP Blocking', $this->text_domain),
+            array($this, 'enable_ip_blocking_render'),
+            'blockforce_settings',
+            'blockforce_main_section'
+        );
+
+        add_settings_field(
+            'enable_global_blocklist',
+            __('Global Blocklist', $this->text_domain),
+            array($this, 'enable_global_blocklist_render'),
+            'blockforce_settings',
+            'blockforce_main_section'
+        );
+
+        add_settings_field(
+            'enable_url_change',
+            __('Custom Login URL', $this->text_domain),
+            array($this, 'enable_url_change_render'),
+            'blockforce_settings',
+            'blockforce_main_section'
+        );
         add_settings_field('alert_email', __('Security Alert Email', $this->text_domain), array($this, 'alert_email_render'), 'blockforce_settings', 'blockforce_main_section');
     }
 
@@ -384,6 +405,24 @@ class BlockForce_WP_Admin
             style="margin-left: 10px; color: #646970;">(<?php echo esc_html(sprintf(__('≈ %s hours', $this->text_domain), $hours)); ?>)</span>
         <p class="description">
             <?php esc_html_e('Monitoring window for persistent attacks. Default: 7200 seconds', $this->text_domain); ?>
+        </p>
+        <?php
+    }
+
+    public function enable_global_blocklist_render()
+    {
+        // Default to false if not set
+        $enabled = isset($this->settings['enable_global_blocklist']) ? $this->settings['enable_global_blocklist'] : 0;
+        ?>
+        <label>
+            <input type="checkbox" name="blockforce_settings[enable_global_blocklist]" value="1" <?php checked(1, $enabled); ?>>
+            <?php esc_html_e('Block IPs from global blacklist (updated daily)', $this->text_domain); ?>
+            <span class="blockforce-badge <?php echo $enabled ? 'blockforce-badge-enabled' : 'blockforce-badge-disabled'; ?>">
+                <?php echo $enabled ? esc_html__('ENABLED', $this->text_domain) : esc_html__('DISABLED', $this->text_domain); ?>
+            </span>
+        </label>
+        <p class="description">
+            <?php esc_html_e('Automatically blocks IPs listed in the FireHol Level 1 reputation list. This list is updated daily.', $this->text_domain); ?>
         </p>
         <?php
     }
