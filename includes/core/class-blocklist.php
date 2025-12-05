@@ -128,6 +128,13 @@ class BlockForce_WP_Blocklist
      */
     public function update_blocklist()
     {
+        global $wpdb;
+
+        // Ensure table exists (self-healing)
+        if ($wpdb->get_var("SHOW TABLES LIKE '{$this->table_name}'") != $this->table_name) {
+            $this->create_table();
+        }
+
         // Source: FireHol Level 1 (Top malicious IPs)
         $source_url = 'https://iplists.firehol.org/files/firehol_level1.netset';
 
@@ -170,6 +177,29 @@ class BlockForce_WP_Blocklist
         update_option('blockforce_blocklist_last_sync', current_time('mysql'));
         update_option('blockforce_blocklist_count', count($ips_to_add));
     }
+
+    /**
+     * Create blocklist table if it doesn't exist
+     */
+    private function create_table()
+    {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE {$this->table_name} (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            ip varchar(100) NOT NULL,
+            source varchar(20) DEFAULT 'auto' NOT NULL,
+            created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            PRIMARY KEY  (id),
+            KEY ip (ip),
+            KEY source (source)
+        ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+    }
+
 
     /**
      * Validate IP or CIDR string
