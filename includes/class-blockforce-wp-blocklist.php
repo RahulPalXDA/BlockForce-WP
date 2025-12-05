@@ -33,6 +33,9 @@ class BlockForce_WP_Blocklist
     /**
      * Check if the current user's IP is in the blocklist
      */
+    /**
+     * Check if the current user's IP is in the blocklist
+     */
     public function check_ip_access()
     {
         // Check if feature is enabled
@@ -58,22 +61,66 @@ class BlockForce_WP_Blocklist
     }
 
     /**
-     * Check database for IP existence
+     * Check if IP is in blocklist (supports CIDR)
      */
     private function is_ip_in_blocklist($ip)
     {
         global $wpdb;
 
-        // Basic optimization: if table doesn't exist, return false
-        if ($wpdb->get_var("SHOW TABLES LIKE '{$this->table_name}'") != $this->table_name) {
+        // Try to get from cache first
+        $rules = get_transient('blockforce_blocklist_cache');
+
+        if ($rules === false) {
+            // Include both manual and auto entries
+            // Optimization: Fetch all IPs/CIDRs into memory. ~5000 entries is fine for PHP array.
+            if ($wpdb->get_var("SHOW TABLES LIKE '{$this->table_name}'") != $this->table_name) {
+                return false;
+            }
+            $rules = $wpdb->get_col("SELECT ip FROM {$this->table_name}");
+            set_transient('blockforce_blocklist_cache', $rules, 12 * HOUR_IN_SECONDS);
+        }
+
+        if (empty($rules)) {
             return false;
         }
 
-        // Prepare query
-        $query = $wpdb->prepare("SELECT id FROM {$this->table_name} WHERE ip = %s LIMIT 1", $ip);
-        $result = $wpdb->get_var($query);
+        foreach ($rules as $rule) {
+            if ($this->ip_in_range($ip, $rule)) {
+                return true;
+            }
+        }
 
-        return !empty($result);
+        return false;
+    }
+
+    /**
+     * Check if an IP matches a rule (Single IP or CIDR)
+     */
+    private function ip_in_range($ip, $range)
+    {
+        if (strpos($range, '/') !== false) {
+            // CIDR
+            return $this->cidr_match($ip, $range);
+        } else {
+            // Single IP
+            return $ip === $range;
+        }
+    }
+
+    /**
+     * Check if IP matches CIDR range (IPv4 only for now)
+     */
+    private function cidr_match($ip, $cidr)
+    {
+        list($subnet, $bits) = explode('/', $cidr);
+
+        // Convert to binary
+        $ip_bin = ip2long($ip);
+        $subnet_bin = ip2long($subnet);
+        $mask = -1 << (32 - $bits);
+
+        // Check matching subnet
+        return ($ip_bin & $mask) == ($subnet_bin & $mask);
     }
 
     /**
@@ -102,22 +149,41 @@ class BlockForce_WP_Blocklist
 
         foreach ($lines as $line) {
             $line = trim($line);
+            // Skip comments and empty lines
             if (empty($line) || strpos($line, '#') === 0) {
                 continue;
             }
 
-            if (filter_var($line, FILTER_VALIDATE_IP)) {
+            // Validate IP or CIDR
+            if ($this->is_valid_entry($line)) {
                 $ips_to_add[] = $line;
             }
         }
 
         if (!empty($ips_to_add)) {
             $this->save_auto_ips_to_db($ips_to_add);
+            // Clear cache after update
+            delete_transient('blockforce_blocklist_cache');
         }
 
         // Update sync status
         update_option('blockforce_blocklist_last_sync', current_time('mysql'));
         update_option('blockforce_blocklist_count', count($ips_to_add));
+    }
+
+    /**
+     * Validate IP or CIDR string
+     */
+    private function is_valid_entry($entry)
+    {
+        if (strpos($entry, '/') !== false) {
+            // CIDR validation
+            list($ip, $bits) = explode('/', $entry);
+            return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) && is_numeric($bits) && $bits >= 0 && $bits <= 32;
+        } else {
+            // Single IP validation
+            return filter_var($entry, FILTER_VALIDATE_IP);
+        }
     }
 
     /**
@@ -160,12 +226,17 @@ class BlockForce_WP_Blocklist
     {
         global $wpdb;
 
-        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
-            return new WP_Error('invalid_ip', __('Invalid IP address.', 'blockforce-wp'));
+        if (!$this->is_valid_entry($ip)) {
+            return new WP_Error('invalid_ip', __('Invalid IP address or CIDR range.', 'blockforce-wp'));
         }
 
         // Check availability
-        if ($this->is_ip_in_blocklist($ip)) {
+        // For manual add, we check strict existence to avoid duplicate DB entries.
+        // We do NOT check if ip_in_range, because you might want to block a specific IP even if it's in a range (though redundant).
+        // Actually, to prevent DB uniq key error, we check specific existence.
+        $exists = $wpdb->get_var($wpdb->prepare("SELECT id FROM {$this->table_name} WHERE ip = %s", $ip));
+
+        if ($exists) {
             return new WP_Error('duplicate_ip', __('IP already in blocklist.', 'blockforce-wp'));
         }
 
@@ -182,6 +253,9 @@ class BlockForce_WP_Blocklist
         if ($result === false) {
             return new WP_Error('db_error', __('Database error.', 'blockforce-wp'));
         }
+
+        // Clear cache
+        delete_transient('blockforce_blocklist_cache');
 
         return true;
     }
@@ -201,6 +275,10 @@ class BlockForce_WP_Blocklist
                 $id
             )
         );
+
+        if ($result) {
+            delete_transient('blockforce_blocklist_cache');
+        }
 
         return $result !== false;
     }
