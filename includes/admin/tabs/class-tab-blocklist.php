@@ -105,11 +105,14 @@ class BlockForce_WP_Tab_Blocklist
                     <div class="alignleft actions">
                         <select name="source_filter">
                             <option value="" <?php selected($source_filter, ''); ?>>
-                                <?php esc_html_e('All Sources', $this->text_domain); ?></option>
+                                <?php esc_html_e('All Sources', $this->text_domain); ?>
+                            </option>
                             <option value="manual" <?php selected($source_filter, 'manual'); ?>>
-                                <?php esc_html_e('Manual', $this->text_domain); ?></option>
+                                <?php esc_html_e('Manual', $this->text_domain); ?>
+                            </option>
                             <option value="auto" <?php selected($source_filter, 'auto'); ?>>
-                                <?php esc_html_e('Auto (Sync)', $this->text_domain); ?></option>
+                                <?php esc_html_e('Auto (Sync)', $this->text_domain); ?>
+                            </option>
                         </select>
                         <input type="submit" name="filter_action" id="post-query-submit" class="button"
                             value="<?php esc_attr_e('Filter', $this->text_domain); ?>">
@@ -135,21 +138,82 @@ class BlockForce_WP_Tab_Blocklist
      */
     private function render_table($data, $search_query, $source_filter, $total_pages, $paged)
     {
+        // Enhanced pagination with page number boxes
         $page_links = paginate_links(array(
             'base' => add_query_arg('paged', '%#%'),
             'format' => '',
-            'prev_text' => __('&laquo;', $this->text_domain),
-            'next_text' => __('&raquo;', $this->text_domain),
+            'prev_text' => '&laquo; ' . __('Prev', $this->text_domain),
+            'next_text' => __('Next', $this->text_domain) . ' &raquo;',
+            'first_text' => '&laquo;&laquo;',
+            'last_text' => '&raquo;&raquo;',
             'total' => $total_pages,
-            'current' => $paged
+            'current' => $paged,
+            'show_all' => false,
+            'end_size' => 1,
+            'mid_size' => 2,
+            'type' => 'plain',
+            'add_args' => array_filter(array(
+                's' => $search_query,
+                'source_filter' => $source_filter
+            ))
         ));
         ?>
+        <style>
+            .blockforce-pagination {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+                margin: 15px 0;
+            }
+
+            .blockforce-pagination a,
+            .blockforce-pagination span.current {
+                display: inline-block;
+                padding: 8px 12px;
+                text-decoration: none;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                background: #fff;
+                color: #0073aa;
+                font-weight: 500;
+                min-width: 40px;
+                text-align: center;
+                transition: all 0.2s ease;
+            }
+
+            .blockforce-pagination a:hover {
+                background: #0073aa;
+                color: #fff;
+                border-color: #0073aa;
+            }
+
+            .blockforce-pagination span.current {
+                background: #0073aa;
+                color: #fff;
+                border-color: #0073aa;
+            }
+
+            .blockforce-pagination .dots {
+                padding: 8px 5px;
+                color: #666;
+            }
+
+            .blockforce-pagination .prev-next {
+                padding: 8px 15px;
+            }
+        </style>
+
         <div class="tablenav top">
-            <div class="tablenav-pages">
+            <div class="tablenav-pages"
+                style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                 <span
                     class="displaying-num"><?php echo sprintf(_n('%s item', '%s items', $data['total'], $this->text_domain), number_format_i18n($data['total'])); ?></span>
-                <?php if ($page_links)
-                    echo '<span class="pagination-links">' . $page_links . '</span>'; ?>
+                <?php if ($total_pages > 1): ?>
+                    <div class="blockforce-pagination">
+                        <?php echo $page_links; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -206,10 +270,11 @@ class BlockForce_WP_Tab_Blocklist
         </table>
 
         <div class="tablenav bottom">
-            <div class="tablenav-pages">
-                <?php if ($page_links)
-                    echo '<span class="pagination-links">' . $page_links . '</span>'; ?>
-            </div>
+            <?php if ($total_pages > 1): ?>
+                <div class="blockforce-pagination">
+                    <?php echo $page_links; ?>
+                </div>
+            <?php endif; ?>
         </div>
         <?php
     }
