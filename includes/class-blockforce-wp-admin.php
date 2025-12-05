@@ -21,6 +21,7 @@ class BlockForce_WP_Admin
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'settings_init'));
         add_action('admin_init', array($this, 'handle_plugin_reset'));
+        add_action('admin_init', array($this, 'handle_login_url_reset'));
         add_action('admin_init', array($this, 'handle_test_email'));
         add_action('admin_init', array($this, 'handle_bulk_unblock'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
@@ -745,6 +746,11 @@ class BlockForce_WP_Admin
 
     public function handle_bulk_unblock()
     {
+        // Ensure we are on the specific plugin page
+        if (!isset($_GET['page']) || $_GET['page'] !== 'blockforce-wp') {
+            return;
+        }
+
         if (!is_admin() || !current_user_can('manage_options')) {
             return;
         }
@@ -783,6 +789,11 @@ class BlockForce_WP_Admin
 
     public function handle_plugin_reset()
     {
+        // Ensure we are on the specific plugin page
+        if (!isset($_GET['page']) || $_GET['page'] !== 'blockforce-wp') {
+            return;
+        }
+
         if (!is_admin() || !current_user_can('manage_options')) {
             return;
         }
@@ -826,12 +837,53 @@ class BlockForce_WP_Admin
     }
 
     /**
+     * Handle login URL reset only
+     */
+    public function handle_login_url_reset()
+    {
+        // Ensure we are on the specific plugin page
+        if (!isset($_GET['page']) || $_GET['page'] !== 'blockforce-wp') {
+            return;
+        }
+
+        if (!is_admin() || !current_user_can('manage_options')) {
+            return;
+        }
+
+        if (isset($_GET['blockforce_reset_url']) && $_GET['blockforce_reset_url'] === '1') {
+            if (!isset($_GET['_wpnonce_reset_url']) || !wp_verify_nonce(sanitize_key($_GET['_wpnonce_reset_url']), 'blockforce_reset_url_nonce')) {
+                wp_die(__('Security check failed.', $this->text_domain));
+            }
+
+            // Reset login slug only
+            update_option('blockforce_login_slug', '');
+            $this->core->login_url->flush_rewrite_rules();
+
+            add_settings_error(
+                'blockforce_reset',
+                'reset_url_success',
+                __('Login URL reset successfully to default wp-login.php.', $this->text_domain),
+                'updated'
+            );
+
+            $redirect_url = admin_url('options-general.php?page=blockforce-wp&tab=reset&settings-updated=true');
+            wp_safe_redirect($redirect_url);
+            exit;
+        }
+    }
+
+    /**
      * Handle test email request
      *
      * @return void
      */
     public function handle_test_email()
     {
+        // Ensure we are on the specific plugin page
+        if (!isset($_GET['page']) || $_GET['page'] !== 'blockforce-wp') {
+            return;
+        }
+
         if (!is_admin() || !current_user_can('manage_options')) {
             return;
         }
@@ -903,6 +955,25 @@ class BlockForce_WP_Admin
             </p>
 
             <?php settings_errors('blockforce_reset'); ?>
+
+            <!-- Reset Login URL Only Section -->
+            <div class="blockforce-card" style="border-left: 4px solid #0073aa; margin-top: 20px;">
+                <h3 style="margin-top: 0;"><?php esc_html_e('Reset Login URL Only', $this->text_domain); ?></h3>
+                <p><?php esc_html_e('Use this if you forgot your custom login URL or want to revert to the default.', $this->text_domain); ?>
+                </p>
+                <p>
+                    <a href="<?php echo esc_url(wp_nonce_url(
+                        admin_url('options-general.php?page=blockforce-wp&tab=reset&blockforce_reset_url=1'),
+                        'blockforce_reset_url_nonce',
+                        '_wpnonce_reset_url'
+                    )); ?>" class="button button-secondary">
+                        <?php esc_html_e('Reset Login URL to Default', $this->text_domain); ?>
+                    </a>
+                </p>
+                <p class="description">
+                    <?php esc_html_e('This will only change the login URL. Logic logs and blocked IPs will remain.', $this->text_domain); ?>
+                </p>
+            </div>
 
             <div class="blockforce-warning-box" style="margin: 20px 0;">
                 <p style="margin: 0;"><strong><?php esc_html_e('Warning:', $this->text_domain); ?></strong>
