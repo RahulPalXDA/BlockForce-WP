@@ -1,32 +1,111 @@
 # BlockForce WP
 
-Minimal, enhanced login security with IP blocking, automatic URL change, and email alerts.
+![WordPress](https://img.shields.io/badge/WordPress-5.0%2B-blue)
+![PHP](https://img.shields.io/badge/PHP-7.4%2B-purple)
+![License](https://img.shields.io/badge/License-GPLv2-green)
+![Version](https://img.shields.io/badge/Version-1.1.0-orange)
+
+Lightweight login security with IP blocking, automatic URL change, and email alerts.
 
 ## Description
 
 BlockForce WP is a lightweight yet powerful security plugin designed to protect your WordPress login page from brute-force attacks. It combines persistent IP blocking, automatic login URL changing, and detailed activity logging into a simple, easy-to-use package.
 
-**Key Features:**
-*   **Brute Force Protection**: Automatically blocks IPs after a specified number of failed login attempts.
-*   **Persistent Blocking**: Blocks are stored in the database, ensuring protection even if the attacker clears their cookies.
-*   **Auto URL Change**: Automatically changes your login URL (slug) if an attack persists, hiding the login page from bots.
-*   **Activity Log**: detailed log of all successful and failed login attempts with bulk delete capability.
-*   **Email Alerts**: Get notified when an IP is blocked or your login URL is changed.
-*   **Stealth Mode**: Accessing the default `wp-login.php` or `wp-admin` redirects to a 404 page when a custom slug is active.
+### Key Features
+
+| Feature | Description |
+|---------|-------------|
+| 🛡️ **Brute Force Protection** | Automatically blocks IPs after failed login attempts |
+| 🔒 **Persistent Blocking** | Blocks stored in database, survives cookie clears |
+| 🔄 **Auto URL Change** | Automatically changes login URL when attacks persist |
+| 📋 **Activity Log** | Detailed log of all login attempts with pagination |
+| 📧 **Email Alerts** | Get notified when your login URL changes |
+| 👻 **Stealth Mode** | Default wp-login.php redirects to 404 when custom URL active |
+| 📊 **Dashboard Widget** | Quick security overview on your dashboard |
+| ❤️ **Site Health** | Plugin status in WordPress Site Health |
+| 🔧 **Granular Reset** | Reset specific components without losing all data |
+
+### Admin Interface
+
+```
+🔒 BlockForce WP (top-level menu)
+├── 📊 Overview — Login status & blocked IPs
+├── 📋 Activity Log — Browse login attempts
+├── ⚙️ Settings — Configure protection options
+└── 🔧 Reset & Tools — Granular reset options
+```
 
 ## Installation
 
-1.  Upload the plugin files to the `/wp-content/plugins/blockforce-wp` directory, or install the plugin through the WordPress plugins screen directly.
-2.  Activate the plugin through the 'Plugins' screen in WordPress.
-3.  Navigate to **BlockForce WP** in the admin menu to configure your settings.
+1. Upload the plugin to `/wp-content/plugins/blockforce-wp`
+2. Activate through the 'Plugins' screen
+3. Navigate to **BlockForce WP** in the admin sidebar
 
-## Frequently Asked Questions
+## Configuration
+
+### Settings Options
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Maximum Failed Attempts | Attempts before triggering protection | 2 |
+| IP Block Duration | How long to block malicious IPs | 120 seconds |
+| Attack Monitoring Window | Window for tracking persistent attacks | 7200 seconds |
+| Enable IP Blocking | Block IPs after failed attempts | Enabled |
+| Enable Auto URL Change | Change URL on persistent attacks | Enabled |
+| Security Alert Email | Email for notifications | Admin email |
+
+### Reset Options
+
+- **Clear Activity Logs** — Remove all login records
+- **Clear Blocked IPs** — Unblock all IP addresses
+- **Clear Attempt Tracking** — Reset login counters
+- **Reset Login URL** — Restore default wp-login.php
+- **Full Reset** — All of the above (settings preserved)
+
+## FAQ
 
 ### What happens if I get locked out?
-If you get locked out, you can:
-1.  Wait for the block duration to expire (default 60 minutes).
-2.  Access your database and delete the `bfwp_blocked_[your_ip]` option from the `wp_options` table.
-3.  Rename the plugin folder via FTP to disable it temporarily.
 
-### How do I reset the plugin?
-Go to the **Reset** tab in the plugin settings and click "Reset All Settings".
+**Method 1: Wait it out**
+Block duration expires automatically (default: 2 minutes)
+
+**Method 2: Unblock via database**
+```sql
+DELETE FROM wp_options WHERE option_name = 'bfwp_blocked_YOUR.IP.ADDRESS';
+```
+Replace `YOUR.IP.ADDRESS` with your actual IP (e.g., `192.168.1.100`)
+
+**Method 3: Reset secret login URL**
+```sql
+DELETE FROM wp_options WHERE option_name = 'blockforce_login_slug';
+```
+This restores the default wp-login.php
+
+**Method 4: Disable via FTP**
+Rename `/wp-content/plugins/blockforce-wp` to `blockforce-wp-disabled`
+
+### How do I find my secret login URL?
+
+Check your email for the notification, or go to **BlockForce WP → Overview**.
+
+### Will this conflict with other security plugins?
+
+BlockForce WP focuses on login protection and should work with most security plugins. Test in staging first.
+
+## Requirements
+
+- WordPress 5.0+
+- PHP 7.4+
+- MySQL 5.6+ or MariaDB 10.0+
+
+## License
+
+GPLv2 or later. See [LICENSE](https://www.gnu.org/licenses/gpl-2.0.html).
+
+## Author
+
+**RahulPalXDA**
+
+---
+
+⭐ If you find this plugin useful, please consider giving it a star!

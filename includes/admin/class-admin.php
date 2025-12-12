@@ -154,7 +154,7 @@ class BlockForce_WP_Admin
             return;
         }
 
-        if (isset($_POST['blockforce_bulk_action']) && $_POST['blockforce_bulk_action'] === 'unblock') {
+        if (isset($_POST['blockforce_bulk_action']) && sanitize_key($_POST['blockforce_bulk_action']) === 'unblock') {
             if (!wp_verify_nonce(sanitize_key($_POST['_wpnonce_bulk'] ?? ''), 'blockforce_bulk_unblock')) {
                 wp_die(__('Security check failed.', $this->text_domain), __('Error', $this->text_domain), array('response' => 403));
             }
@@ -239,7 +239,7 @@ class BlockForce_WP_Admin
             return;
         }
 
-        if (!isset($_GET['blockforce_test_email']) || $_GET['blockforce_test_email'] !== '1') {
+        if (!isset($_GET['blockforce_test_email']) || sanitize_key($_GET['blockforce_test_email']) !== '1') {
             return;
         }
 
