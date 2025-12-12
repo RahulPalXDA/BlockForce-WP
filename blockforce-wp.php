@@ -19,6 +19,7 @@ define('BFWP_TEXT_DOMAIN', 'blockforce-wp');
 define('BFWP_BASENAME', plugin_basename(__FILE__));
 
 require_once BFWP_PATH . 'includes/functions.php';
+require_once BFWP_PATH . 'includes/class-blockforce-wp.php';
 
 register_activation_hook(__FILE__, array('BlockForce_WP', 'activate'));
 register_deactivation_hook(__FILE__, 'blockforce_wp_deactivate');
