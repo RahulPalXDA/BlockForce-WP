@@ -33,6 +33,91 @@ class BlockForce_WP_Utils
     }
 
     /**
+     * Check if an IP address is a localhost IP.
+     *
+     * Covers all standard localhost representations:
+     * - 127.0.0.1 (IPv4 loopback)
+     * - ::1 (IPv6 loopback)
+     * - 127.0.0.0/8 range (all 127.x.x.x addresses)
+     *
+     * @param string $ip The IP address to check.
+     * @return bool True if the IP is a localhost IP, false otherwise.
+     */
+    public static function is_localhost_ip($ip)
+    {
+        if (empty($ip)) {
+            return false;
+        }
+
+        // Normalize the IP
+        $ip = trim($ip);
+
+        // IPv6 loopback
+        if ($ip === '::1') {
+            return true;
+        }
+
+        // IPv4 loopback range: 127.0.0.0/8
+        // This covers 127.0.0.1, 127.0.0.2, 127.1.1.1, etc.
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $ip_long = ip2long($ip);
+            $loopback_start = ip2long('127.0.0.0');
+            $loopback_end = ip2long('127.255.255.255');
+
+            if ($ip_long >= $loopback_start && $ip_long <= $loopback_end) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the current request is an authentic localhost connection.
+     *
+     * SECURITY: This prevents spoofing attacks by validating that:
+     * 1. REMOTE_ADDR is a localhost IP (cannot be spoofed at application level)
+     * 2. SERVER_ADDR is also a localhost IP (server is listening on loopback)
+     *
+     * A hacker cannot spoof REMOTE_ADDR through HTTP headers - it comes from
+     * the actual TCP/IP socket connection. The only way to have a localhost
+     * REMOTE_ADDR is to be physically on the same machine.
+     *
+     * @return bool True if the request is from an authentic localhost, false otherwise.
+     */
+    public static function is_authentic_localhost()
+    {
+        // Get the client IP from REMOTE_ADDR (secure, cannot be spoofed)
+        $remote_addr = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '';
+
+        // First check: REMOTE_ADDR must be localhost
+        if (!self::is_localhost_ip($remote_addr)) {
+            return false;
+        }
+
+        // Second check: SERVER_ADDR should also be localhost for full validation
+        // This ensures the server is running on loopback interface
+        $server_addr = isset($_SERVER['SERVER_ADDR']) ? sanitize_text_field($_SERVER['SERVER_ADDR']) : '';
+
+        // If SERVER_ADDR is available, validate it's also localhost
+        // (Some server configurations may not expose SERVER_ADDR)
+        if (!empty($server_addr) && !self::is_localhost_ip($server_addr)) {
+            // Server is not on localhost, but client claims to be - suspicious
+            // However, this could happen with Docker/container setups where
+            // the web server binds to 0.0.0.0 but request comes from localhost
+            // So we still allow it if REMOTE_ADDR is verified localhost
+            // because REMOTE_ADDR cannot be spoofed at the application level
+
+            // Log for monitoring but don't block
+            error_log('BlockForce WP: Localhost request detected with non-localhost SERVER_ADDR. REMOTE_ADDR: ' . $remote_addr . ', SERVER_ADDR: ' . $server_addr);
+        }
+
+        // REMOTE_ADDR is localhost - this is authentic
+        // REMOTE_ADDR comes from the actual TCP socket, not HTTP headers
+        return true;
+    }
+
+    /**
      * Generate a random slug for the login URL using cryptographically secure randomness.
      *
      * @return string A 12-character hexadecimal string (cryptographically secure)

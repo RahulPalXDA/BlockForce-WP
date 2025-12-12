@@ -60,6 +60,12 @@ class BlockForce_WP_Security
      */
     public function track_login_attempt($username)
     {
+        // SECURITY: Never track or block localhost connections
+        // is_authentic_localhost() validates REMOTE_ADDR cannot be spoofed
+        if (BlockForce_WP_Utils::is_authentic_localhost()) {
+            return;
+        }
+
         $user_ip = BlockForce_WP_Utils::get_user_ip();
         $current_time = time();
 
@@ -191,6 +197,12 @@ class BlockForce_WP_Security
 
     public function is_ip_blocked($user_ip)
     {
+        // SECURITY: Never block localhost IPs
+        // This uses is_localhost_ip() which checks the IP value directly
+        if (BlockForce_WP_Utils::is_localhost_ip($user_ip)) {
+            return false;
+        }
+
         $block_data = get_option('bfwp_blocked_' . $user_ip);
         if ($block_data !== false) {
             // Check if block is still active
