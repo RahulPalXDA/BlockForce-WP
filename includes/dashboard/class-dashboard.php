@@ -1,71 +1,25 @@
 <?php
-
-/**
- * BlockForce WP Dashboard Widget
- *
- * @package BlockForce_WP
- * @since 1.1.0
- */
-
 if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Class BlockForce_WP_Dashboard
- *
- * Handles the WordPress admin dashboard widget functionality.
- */
 class BlockForce_WP_Dashboard
 {
-    /**
-     * Plugin settings
-     *
-     * @var array
-     */
     private $settings;
-
-    /**
-     * Main plugin controller
-     *
-     * @var BlockForce_WP
-     */
     private $core;
-
-    /**
-     * Text domain for translations
-     *
-     * @var string
-     */
     private $text_domain = BFWP_TEXT_DOMAIN;
 
-    /**
-     * Constructor
-     *
-     * @param array         $settings Plugin settings.
-     * @param BlockForce_WP $core     Main plugin controller.
-     */
     public function __construct($settings, $core)
     {
         $this->settings = $settings;
         $this->core = $core;
     }
 
-    /**
-     * Initialize hooks
-     *
-     * @return void
-     */
     public function init_hooks()
     {
         add_action('wp_dashboard_setup', array($this, 'add_dashboard_widget'));
     }
 
-    /**
-     * Add dashboard widget
-     *
-     * @return void
-     */
     public function add_dashboard_widget()
     {
         wp_add_dashboard_widget(
@@ -75,21 +29,13 @@ class BlockForce_WP_Dashboard
         );
     }
 
-    /**
-     * Render dashboard widget content
-     *
-     * @return void
-     */
     public function render_dashboard_widget()
     {
         $current_slug = $this->core->login_url->get_login_slug();
         $site_url = get_site_url();
         $ip_blocking_enabled = isset($this->settings['enable_ip_blocking']) ? $this->settings['enable_ip_blocking'] : 1;
         $url_change_enabled = isset($this->settings['enable_url_change']) ? $this->settings['enable_url_change'] : 1;
-
-        // Get statistics
         $stats = $this->get_attack_statistics();
-
         ?>
         <style>
             .blockforce-dashboard-widget {
@@ -229,6 +175,18 @@ class BlockForce_WP_Dashboard
                 font-size: 12px;
             }
 
+            .blockforce-quick-actions .dashicons {
+                margin-top: 3px;
+            }
+
+            .blockforce-icon-lock {
+                color: #d63638;
+            }
+
+            .blockforce-icon-home {
+                color: #00a32a;
+            }
+
             @media screen and (max-width: 782px) {
                 .blockforce-stat-grid {
                     grid-template-columns: repeat(2, 1fr);
@@ -243,15 +201,12 @@ class BlockForce_WP_Dashboard
                 }
             }
         </style>
-
         <div class="blockforce-dashboard-widget">
             <div class="blockforce-dashboard-header">
                 <h3><?php esc_html_e('Security Status', $this->text_domain); ?></h3>
                 <p><?php esc_html_e('Your WordPress login is protected', $this->text_domain); ?></p>
             </div>
-
             <div class="blockforce-dashboard-content">
-                <!-- Statistics Grid -->
                 <div class="blockforce-stat-grid">
                     <div class="blockforce-stat-card <?php echo $stats['blocked_today'] > 0 ? 'danger' : 'success'; ?>">
                         <div class="blockforce-stat-number"><?php echo esc_html($stats['blocked_today']); ?></div>
@@ -266,15 +221,13 @@ class BlockForce_WP_Dashboard
                         <div class="blockforce-stat-label"><?php esc_html_e('Active Blocks', $this->text_domain); ?></div>
                     </div>
                 </div>
-
-                <!-- Current Login URL -->
                 <div class="blockforce-login-url-box">
                     <strong>
-                        <?php if ($current_slug) : ?>
-                            <span class="dashicons dashicons-lock" style="color: #d63638;"></span>
+                        <?php if ($current_slug): ?>
+                            <span class="dashicons dashicons-lock blockforce-icon-lock"></span>
                             <?php esc_html_e('Secret Login URL:', $this->text_domain); ?>
-                        <?php else : ?>
-                            <span class="dashicons dashicons-admin-home" style="color: #00a32a;"></span>
+                        <?php else: ?>
+                            <span class="dashicons dashicons-admin-home blockforce-icon-home"></span>
                             <?php esc_html_e('Default Login URL:', $this->text_domain); ?>
                         <?php endif; ?>
                     </strong>
@@ -282,8 +235,6 @@ class BlockForce_WP_Dashboard
                         <?php echo esc_url($current_slug ? $site_url . '/' . $current_slug : $site_url . '/wp-login.php'); ?>
                     </div>
                 </div>
-
-                <!-- Protection Status -->
                 <div class="blockforce-status-indicators">
                     <div class="blockforce-status-badge <?php echo $ip_blocking_enabled ? 'enabled' : 'disabled'; ?>">
                         <span class="dashicons dashicons-<?php echo $ip_blocking_enabled ? 'yes-alt' : 'dismiss'; ?>"></span>
@@ -294,18 +245,14 @@ class BlockForce_WP_Dashboard
                         <?php esc_html_e('Auto URL Change', $this->text_domain); ?>
                     </div>
                 </div>
-
-                <!-- Quick Actions -->
                 <div class="blockforce-quick-actions">
-                    <a href="<?php echo esc_url(admin_url('options-general.php?page=blockforce-wp')); ?>"
-                        class="button button-primary">
-                        <span class="dashicons dashicons-admin-settings" style="margin-top: 3px;"></span>
-                        <?php esc_html_e('Settings', $this->text_domain); ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=blockforce-wp')); ?>" class="button button-primary">
+                        <span class="dashicons dashicons-visibility"></span>
+                        <?php esc_html_e('Overview', $this->text_domain); ?>
                     </a>
-                    <a href="<?php echo esc_url(admin_url('options-general.php?page=blockforce-wp&tab=reset')); ?>"
-                        class="button">
-                        <span class="dashicons dashicons-update" style="margin-top: 3px;"></span>
-                        <?php esc_html_e('Reset', $this->text_domain); ?>
+                    <a href="<?php echo esc_url(admin_url('admin.php?page=blockforce-wp-settings')); ?>" class="button">
+                        <span class="dashicons dashicons-admin-settings"></span>
+                        <?php esc_html_e('Settings', $this->text_domain); ?>
                     </a>
                 </div>
             </div>
@@ -313,33 +260,21 @@ class BlockForce_WP_Dashboard
         <?php
     }
 
-    /**
-     * Get attack statistics
-     *
-     * @return array Statistics data.
-     */
     private function get_attack_statistics()
     {
         global $wpdb;
 
-        // Get all permanent blocks related to BlockForce
         $blocked_ips = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT option_name, option_value 
-                 FROM {$wpdb->options} 
-                 WHERE option_name LIKE %s 
-                 AND option_name NOT LIKE %s",
+                "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name NOT LIKE %s",
                 $wpdb->esc_like('bfwp_blocked_') . '%',
-                $wpdb->esc_like('_transient_') . '%' // Exclude transients
+                $wpdb->esc_like('_transient_') . '%'
             )
         );
 
         $attempt_logs = $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT option_name, option_value 
-                 FROM {$wpdb->options} 
-                 WHERE option_name LIKE %s 
-                 AND option_name NOT LIKE %s",
+                "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name NOT LIKE %s",
                 $wpdb->esc_like('_transient_bfwp_attempts_') . '%',
                 $wpdb->esc_like('_transient_timeout_') . '%'
             )
@@ -347,26 +282,22 @@ class BlockForce_WP_Dashboard
 
         $current_time = time();
         $day_ago = $current_time - DAY_IN_SECONDS;
-
         $blocked_today = 0;
         $attempts_today = 0;
         $active_blocks = 0;
 
-        // Count active blocks
         foreach ($blocked_ips as $blocked) {
             $parts = explode('|', $blocked->option_value);
             if (count($parts) === 2) {
                 $expires_at = intval($parts[1]);
                 if (time() < $expires_at) {
                     $active_blocks++;
-                    // Check if blocked today based on block timestamp
                     $blocked_time = intval($parts[0]);
                     if ($blocked_time >= $day_ago) {
                         $blocked_today++;
                     }
                 }
             } else {
-                // Fallback for old permanent blocks (treat as active)
                 $active_blocks++;
                 $blocked_time = intval($blocked->option_value);
                 if ($blocked_time >= $day_ago) {
@@ -375,7 +306,6 @@ class BlockForce_WP_Dashboard
             }
         }
 
-        // Count recent attempts
         foreach ($attempt_logs as $log) {
             $attempts = maybe_unserialize($log->option_value);
             if (is_array($attempts)) {

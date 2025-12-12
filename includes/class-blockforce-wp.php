@@ -1,5 +1,4 @@
 <?php
-
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -29,7 +28,6 @@ class BlockForce_WP
         $this->settings = get_option('blockforce_settings', $this->default_settings);
         $this->basename = $basename;
 
-        // Load modules
         $this->security = new BlockForce_WP_Security($this->settings, $this);
         $this->login_url = new BlockForce_WP_Login_Url($this->settings, $this);
         $this->admin = new BlockForce_WP_Admin($this->settings, $this);
@@ -37,7 +35,6 @@ class BlockForce_WP
         $this->dashboard = new BlockForce_WP_Dashboard($this->settings, $this);
         $this->health_check = new BlockForce_WP_Health_Check($this->settings, $this);
 
-        // Initialize hooks for each module
         $this->security->init_hooks();
         $this->login_url->init_hooks();
         $this->admin->init_hooks();
@@ -45,6 +42,7 @@ class BlockForce_WP
         $this->dashboard->init_hooks();
         $this->health_check->init_hooks();
     }
+
     public static function activate()
     {
         global $wpdb;

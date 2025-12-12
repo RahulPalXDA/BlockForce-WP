@@ -1,5 +1,4 @@
 <?php
-
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -21,9 +20,6 @@ class BlockForce_WP_Features
         add_filter('login_errors', array($this, 'generic_login_errors'));
     }
 
-    /**
-     * Show generic login errors to prevent username enumeration.
-     */
     public function generic_login_errors($error)
     {
         if (!empty($error) && !is_user_logged_in()) {

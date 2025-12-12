@@ -1,6 +1,9 @@
 /* BlockForce WP - Admin Styles */
 
-/* Card Styles */
+/* ==========================================================================
+   Base Card Styles
+   ========================================================================== */
+
 .blockforce-card {
     background: #fff;
     border: 1px solid #c3c4c7;
@@ -16,7 +19,14 @@
     border-bottom: 1px solid #f0f0f1;
 }
 
-/* Status Box */
+.blockforce-card--mt {
+    margin-top: 20px;
+}
+
+/* ==========================================================================
+   Status Box
+   ========================================================================== */
+
 .blockforce-status-box {
     background: #f6f7f7;
     padding: 15px;
@@ -33,7 +43,27 @@
     border-left-color: #00a32a;
 }
 
-/* URL Display */
+/* Status Indicators */
+.blockforce-status-indicator {
+    font-size: 18px;
+}
+
+.blockforce-status-indicator--active {
+    color: #d63638;
+}
+
+.blockforce-status-indicator--default {
+    color: #00a32a;
+}
+
+.blockforce-status-title {
+    font-size: 16px;
+}
+
+/* ==========================================================================
+   URL Display
+   ========================================================================== */
+
 .blockforce-url-display {
     background: #fff;
     padding: 8px 12px;
@@ -46,7 +76,10 @@
     word-break: break-all;
 }
 
-/* Help & Warning Boxes */
+/* ==========================================================================
+   Help & Warning Boxes
+   ========================================================================== */
+
 .blockforce-help-box {
     background: #f0f6fc;
     border-left: 4px solid #0073aa;
@@ -68,7 +101,20 @@
     border-radius: 2px;
 }
 
-/* Badges */
+.blockforce-warning-box--mt {
+    margin-top: 20px;
+}
+
+.blockforce-warning-box ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    margin-top: 5px;
+}
+
+/* ==========================================================================
+   Badges
+   ========================================================================== */
+
 .blockforce-badge {
     display: inline-block;
     padding: 3px 8px;
@@ -88,7 +134,57 @@
     color: #646970;
 }
 
-/* Blocked IPs Table */
+/* ==========================================================================
+   Info Grid (for overview cards)
+   ========================================================================== */
+
+.blockforce-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.blockforce-info-item {
+    background: #f6f7f7;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.blockforce-info-item h3 {
+    margin-top: 0;
+    font-size: 14px;
+    color: #1d2327;
+}
+
+/* ==========================================================================
+   Feature List
+   ========================================================================== */
+
+.blockforce-feature-list {
+    list-style: none;
+    padding: 0;
+}
+
+.blockforce-feature-list li {
+    padding: 8px 0;
+    padding-left: 25px;
+    position: relative;
+}
+
+.blockforce-feature-list li:before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #00a32a;
+    font-weight: bold;
+}
+
+/* ==========================================================================
+   Blocked IPs Table
+   ========================================================================== */
+
 .blockforce-ips-table {
     width: 100%;
     border-collapse: collapse;
@@ -109,6 +205,10 @@
     font-size: 13px;
 }
 
+.blockforce-ips-table th.blockforce-col-checkbox {
+    width: 40px;
+}
+
 .blockforce-ips-table tbody tr:hover {
     background: #f9f9f9;
 }
@@ -117,7 +217,10 @@
     margin: 0;
 }
 
-/* Bulk Actions */
+/* ==========================================================================
+   Bulk Actions
+   ========================================================================== */
+
 .blockforce-bulk-actions {
     display: flex;
     gap: 10px;
@@ -125,11 +228,121 @@
     margin-bottom: 10px;
 }
 
-/* Mobile Responsive Styles */
+/* ==========================================================================
+   Form Elements
+   ========================================================================== */
+
+.blockforce-input-narrow {
+    width: 100px;
+}
+
+.blockforce-input-medium {
+    width: 120px;
+}
+
+.blockforce-time-hint {
+    margin-left: 10px;
+    color: #646970;
+}
+
+.blockforce-time-left {
+    color: #646970;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+/* ==========================================================================
+   Text Utilities
+   ========================================================================== */
+
+.blockforce-text-success {
+    color: #00a32a;
+    font-weight: bold;
+}
+
+.blockforce-text-danger {
+    color: #d63638;
+    font-weight: bold;
+}
+
+.blockforce-text-muted {
+    color: #646970;
+}
+
+/* ==========================================================================
+   Spacing Utilities
+   ========================================================================== */
+
+.blockforce-mb-0 {
+    margin-bottom: 0;
+}
+
+.blockforce-mt-0 {
+    margin-top: 0;
+}
+
+.blockforce-mt-10 {
+    margin-top: 10px;
+}
+
+.blockforce-mt-15 {
+    margin-top: 15px;
+}
+
+.blockforce-mb-10 {
+    margin-bottom: 10px;
+}
+
+/* ==========================================================================
+   Button Utilities
+   ========================================================================== */
+
+.blockforce-button-icon {
+    margin-top: 3px;
+}
+
+.blockforce-button-danger {
+    background-color: #d63638;
+    color: #fff;
+    border-color: #d63638;
+}
+
+.blockforce-button-danger:hover,
+.blockforce-button-danger:focus {
+    background-color: #b32d2e;
+    border-color: #b32d2e;
+    color: #fff;
+}
+
+/* ==========================================================================
+   Dashboard Widget Styles
+   ========================================================================== */
+
+.blockforce-widget-icon {
+    margin-top: 3px;
+}
+
+.blockforce-widget-icon--lock {
+    color: #d63638;
+}
+
+.blockforce-widget-icon--home {
+    color: #00a32a;
+}
+
+/* ==========================================================================
+   Mobile Responsive Styles
+   ========================================================================== */
+
 @media screen and (max-width: 782px) {
     .blockforce-card {
         padding: 15px;
         margin-bottom: 15px;
+    }
+
+    .blockforce-info-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
     }
 
     .blockforce-url-display {
@@ -199,6 +412,17 @@
     .button .dashicons {
         vertical-align: middle;
     }
+
+    .blockforce-input-narrow,
+    .blockforce-input-medium {
+        width: 100%;
+    }
+
+    .blockforce-time-hint {
+        display: block;
+        margin-left: 0;
+        margin-top: 5px;
+    }
 }
 
 @media screen and (max-width: 600px) {
@@ -209,5 +433,116 @@
     .nav-tab-wrapper .nav-tab {
         font-size: 13px;
         padding: 8px 12px;
+    }
+}
+
+/* ==========================================================================
+   Reset Page Styles
+   ========================================================================== */
+
+.blockforce-page-desc {
+    font-size: 14px;
+    color: #50575e;
+    margin-bottom: 20px;
+}
+
+.blockforce-reset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.blockforce-reset-card {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 20px;
+    display: flex;
+    gap: 15px;
+    transition: box-shadow 0.2s ease;
+}
+
+.blockforce-reset-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.blockforce-reset-card--blue {
+    border-left: 4px solid #0073aa;
+}
+
+.blockforce-reset-card--orange {
+    border-left: 4px solid #dba617;
+}
+
+.blockforce-reset-card__icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: #f0f0f1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.blockforce-reset-card__icon .dashicons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: #50575e;
+}
+
+.blockforce-reset-card__content h3 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+    color: #1d2327;
+}
+
+.blockforce-reset-card__content p {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: #646970;
+    line-height: 1.5;
+}
+
+.blockforce-card--danger {
+    border-left: 4px solid #d63638;
+}
+
+.blockforce-card--danger h2 .dashicons {
+    color: #d63638;
+}
+
+.blockforce-reset-list {
+    list-style: disc;
+    margin: 10px 0 15px 25px;
+}
+
+.blockforce-reset-list li {
+    margin-bottom: 5px;
+}
+
+.blockforce-button-danger .dashicons {
+    margin-right: 5px;
+    margin-top: 3px;
+}
+
+@media screen and (max-width: 782px) {
+    .blockforce-reset-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .blockforce-reset-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .blockforce-reset-card__icon {
+        margin: 0 auto;
+    }
+
+    .blockforce-reset-card__content .button {
+        width: 100%;
     }
 }
