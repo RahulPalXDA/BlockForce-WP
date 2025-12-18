@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -33,8 +35,8 @@ class BlockForce_WP_Dashboard
     {
         $current_slug = $this->core->login_url->get_login_slug();
         $site_url = get_site_url();
-        $ip_blocking_enabled = isset($this->settings['enable_ip_blocking']) ? $this->settings['enable_ip_blocking'] : 1;
-        $url_change_enabled = isset($this->settings['enable_url_change']) ? $this->settings['enable_url_change'] : 1;
+        $ip_blocking_enabled = isset($this->settings['enable_ip_blocking']) ? (bool) $this->settings['enable_ip_blocking'] : true;
+        $url_change_enabled = isset($this->settings['enable_url_change']) ? (bool) $this->settings['enable_url_change'] : true;
         $stats = $this->get_attack_statistics();
         ?>
         <style>
@@ -209,15 +211,15 @@ class BlockForce_WP_Dashboard
             <div class="blockforce-dashboard-content">
                 <div class="blockforce-stat-grid">
                     <div class="blockforce-stat-card <?php echo $stats['blocked_today'] > 0 ? 'danger' : 'success'; ?>">
-                        <div class="blockforce-stat-number"><?php echo esc_html($stats['blocked_today']); ?></div>
+                        <div class="blockforce-stat-number"><?php echo esc_html((string) $stats['blocked_today']); ?></div>
                         <div class="blockforce-stat-label"><?php esc_html_e('Blocked Today', $this->text_domain); ?></div>
                     </div>
                     <div class="blockforce-stat-card <?php echo $stats['attempts_today'] > 0 ? 'warning' : 'success'; ?>">
-                        <div class="blockforce-stat-number"><?php echo esc_html($stats['attempts_today']); ?></div>
+                        <div class="blockforce-stat-number"><?php echo esc_html((string) $stats['attempts_today']); ?></div>
                         <div class="blockforce-stat-label"><?php esc_html_e('Failed Attempts', $this->text_domain); ?></div>
                     </div>
                     <div class="blockforce-stat-card">
-                        <div class="blockforce-stat-number"><?php echo esc_html($stats['active_blocks']); ?></div>
+                        <div class="blockforce-stat-number"><?php echo esc_html((string) $stats['active_blocks']); ?></div>
                         <div class="blockforce-stat-label"><?php esc_html_e('Active Blocks', $this->text_domain); ?></div>
                     </div>
                 </div>
@@ -264,6 +266,7 @@ class BlockForce_WP_Dashboard
     {
         global $wpdb;
 
+        // Blocked IPs (Active and Today)
         $blocked_ips = $wpdb->get_results(
             $wpdb->prepare(
                 "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name NOT LIKE %s",
@@ -272,50 +275,46 @@ class BlockForce_WP_Dashboard
             )
         );
 
-        $attempt_logs = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name NOT LIKE %s",
-                $wpdb->esc_like('_transient_bfwp_attempts_') . '%',
-                $wpdb->esc_like('_transient_timeout_') . '%'
-            )
-        );
-
         $current_time = time();
-        $day_ago = $current_time - DAY_IN_SECONDS;
+        $day_ago_timestamp = $current_time - DAY_IN_SECONDS;
+        $day_ago_mysql = current_time('mysql', false); // This might be slightly offset depending on TZ but good enough for simple stats, or better:
+        $day_ago_mysql = date('Y-m-d H:i:s', strtotime('-1 day', current_time('timestamp')));
+
         $blocked_today = 0;
-        $attempts_today = 0;
         $active_blocks = 0;
 
         foreach ($blocked_ips as $blocked) {
             $parts = explode('|', $blocked->option_value);
             if (count($parts) === 2) {
                 $expires_at = intval($parts[1]);
-                if (time() < $expires_at) {
+                if ($current_time < $expires_at) {
                     $active_blocks++;
                     $blocked_time = intval($parts[0]);
-                    if ($blocked_time >= $day_ago) {
+                    if ($blocked_time >= $day_ago_timestamp) {
                         $blocked_today++;
                     }
                 }
             } else {
+                // Fallback for potentially unstructured data ? although we structured it.
+                // Assuming standard format is used.
                 $active_blocks++;
-                $blocked_time = intval($blocked->option_value);
-                if ($blocked_time >= $day_ago) {
-                    $blocked_today++;
-                }
             }
         }
 
-        foreach ($attempt_logs as $log) {
-            $attempts = maybe_unserialize($log->option_value);
-            if (is_array($attempts)) {
-                foreach ($attempts as $timestamp) {
-                    if ($timestamp >= $day_ago) {
-                        $attempts_today++;
-                    }
-                }
-            }
+        // Persistent Logs for Failed Attempts (More accurate than transients)
+        $table_name = $wpdb->prefix . 'blockforce_logs';
+        // Check if table exists first to avoid fatal errors if installation failed
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name) {
+            $attempts_today = (int) $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(*) FROM $table_name WHERE status = 'failed' AND time > %s",
+                    $day_ago_mysql
+                )
+            );
+        } else {
+            $attempts_today = 0;
         }
+
 
         return array(
             'blocked_today' => $blocked_today,

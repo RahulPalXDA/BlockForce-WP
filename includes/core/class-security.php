@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -187,5 +189,12 @@ class BlockForce_WP_Security
 
     public function cleanup_old_attempts()
     {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'blockforce_logs';
+        
+        // Delete logs older than 30 days
+        $wpdb->query(
+            "DELETE FROM $table_name WHERE time < DATE_SUB(NOW(), INTERVAL 30 DAY)"
+        );
     }
 }
