@@ -31,6 +31,7 @@ class BlockForce_WP_Admin_Settings
         add_settings_field('log_time', __('Attack Monitoring Window', $this->text_domain), array($this, 'render_log_time'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('enable_ip_blocking', __('Enable IP Blocking', $this->text_domain), array($this, 'render_enable_ip_blocking'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('enable_url_change', __('Enable Auto URL Change', $this->text_domain), array($this, 'render_enable_url_change'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field('disable_debug_logs', __('Strictly Disable Debug Logs', $this->text_domain), array($this, 'render_disable_debug_logs'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('alert_email', __('Security Alert Email', $this->text_domain), array($this, 'render_alert_email'), 'blockforce_settings', 'blockforce_main_section');
     }
 
@@ -41,6 +42,7 @@ class BlockForce_WP_Admin_Settings
         $output['block_time'] = max(1, (int) $input['block_time']);
         $output['log_time'] = max(1, (int) $input['log_time']);
         $output['enable_url_change'] = isset($input['enable_url_change']) ? 1 : 0;
+        $output['disable_debug_logs'] = isset($input['disable_debug_logs']) ? 1 : 0;
         $output['enable_ip_blocking'] = isset($input['enable_ip_blocking']) ? 1 : 0;
         $output['alert_email'] = isset($input['alert_email']) ? sanitize_email($input['alert_email']) : '';
 
@@ -122,6 +124,24 @@ class BlockForce_WP_Admin_Settings
                 <?php echo $enabled ? esc_html__('ENABLED', $this->text_domain) : esc_html__('DISABLED', $this->text_domain); ?>
             </span>
         </label>
+        <?php
+    }
+
+    public function render_disable_debug_logs()
+    {
+        // Default to enabled if not set, or check current setting
+        $enabled = isset($this->settings['disable_debug_logs']) ? $this->settings['disable_debug_logs'] : 1;
+        ?>
+        <label>
+            <input type="checkbox" name="blockforce_settings[disable_debug_logs]" value="1" <?php checked(1, $enabled); ?>>
+            <?php esc_html_e('Strictly disable all debug logs and PHP errors', $this->text_domain); ?>
+            <span class="blockforce-badge <?php echo $enabled ? 'blockforce-badge-enabled' : 'blockforce-badge-disabled'; ?>">
+                <?php echo $enabled ? esc_html__('ACTIVE', $this->text_domain) : esc_html__('INACTIVE', $this->text_domain); ?>
+            </span>
+        </label>
+        <p class="description">
+            <?php esc_html_e('Forces error_reporting(0) to prevent any leakage of sensitive information via logs.', $this->text_domain); ?>
+        </p>
         <?php
     }
 

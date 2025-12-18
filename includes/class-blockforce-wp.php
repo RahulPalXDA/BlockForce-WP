@@ -22,6 +22,7 @@ class BlockForce_WP
         'log_time' => 2592000,
         'enable_url_change' => 1,
         'enable_ip_blocking' => 1,
+        'disable_debug_logs' => 1,
         'alert_email' => '',
     );
 
@@ -29,6 +30,14 @@ class BlockForce_WP
     {
         $this->settings = get_option('blockforce_settings', $this->default_settings);
         $this->basename = $basename;
+
+        // Strictly Disable Debug Logs if enabled (default: true)
+        if (isset($this->settings['disable_debug_logs']) && $this->settings['disable_debug_logs']) {
+            error_reporting(0);
+            @ini_set('display_errors', '0');
+            @ini_set('log_errors', '0');
+            @ini_set('error_log', '/dev/null');
+        }
 
         $this->security = new BlockForce_WP_Security($this->settings, $this);
         $this->login_url = new BlockForce_WP_Login_Url($this->settings, $this);
