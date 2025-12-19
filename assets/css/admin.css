@@ -546,3 +546,22 @@
         width: 100%;
     }
 }
+
+/* ==========================================================================
+   Header Alignment
+   ========================================================================== */
+
+.blockforce-wrap h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.blockforce-wrap h1 .dashicons {
+    line-height: 1;
+    margin-top: 0;
+    /* Ensure icon is vertically centered and not distorted */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

@@ -24,7 +24,8 @@ $base_url = admin_url('admin.php?page=blockforce-wp-blocks');
 ?>
 
 <div class="wrap blockforce-wrap">
-    <h1 class="wp-heading-inline"><?php esc_html_e('Blocked IPs', $args['text_domain']); ?></h1>
+    <h1 class="wp-heading-inline"><span class="dashicons dashicons-shield"></span>
+        <?php esc_html_e('Blocked IPs', $args['text_domain']); ?></h1>
     <hr class="wp-header-end">
 
     <?php settings_errors('blockforce_messages'); ?>
@@ -80,7 +81,8 @@ $base_url = admin_url('admin.php?page=blockforce-wp-blocks');
                             <input id="cb-select-all-1" type="checkbox">
                         </td>
                         <th scope="col" class="manage-column column-primary">
-                            <?php esc_html_e('IP Address', $args['text_domain']); ?></th>
+                            <?php esc_html_e('IP Address', $args['text_domain']); ?>
+                        </th>
                         <th scope="col" class="manage-column"><?php esc_html_e('Blocked At', $args['text_domain']); ?>
                         </th>
                         <th scope="col" class="manage-column"><?php esc_html_e('Expires At', $args['text_domain']); ?>
