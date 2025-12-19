@@ -66,7 +66,9 @@ class BlockForce_WP
             user_ip varchar(100) NOT NULL,
             time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
             status varchar(20) NOT NULL,
-            PRIMARY KEY  (id)
+            PRIMARY KEY  (id),
+            KEY status_time_index (status, time),
+            KEY time_index (time)
         ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
