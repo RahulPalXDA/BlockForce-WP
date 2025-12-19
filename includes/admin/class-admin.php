@@ -27,6 +27,7 @@ class BlockForce_WP_Admin
         add_action('admin_init', array($this, 'handle_reset_actions'));
         add_action('admin_init', array($this, 'handle_test_email'));
         add_action('admin_init', array($this, 'handle_bulk_unblock'));
+        add_action('admin_init', array($this, 'handle_single_unblock_action'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
         add_action('update_option_blockforce_settings', array($this, 'on_settings_update'), 10, 2);
         add_filter('plugin_action_links_' . $this->core->basename, array($this, 'add_settings_link'));
@@ -91,6 +92,15 @@ class BlockForce_WP_Admin
 
         add_submenu_page(
             $this->menu_slug,
+            __('Blocked IPs', $this->text_domain),
+            __('Blocked IPs', $this->text_domain),
+            'manage_options',
+            $this->menu_slug . '-blocks',
+            array($this, 'render_blocks_page')
+        );
+
+        add_submenu_page(
+            $this->menu_slug,
             __('Settings', $this->text_domain),
             __('Settings', $this->text_domain),
             'manage_options',
@@ -141,6 +151,32 @@ class BlockForce_WP_Admin
         include BFWP_PATH . 'includes/admin/views/page-reset.php';
     }
 
+    public function render_blocks_page()
+    {
+        $args = $this->get_page_args();
+        include BFWP_PATH . 'includes/admin/views/page-blocks.php';
+    }
+
+    public function handle_single_unblock_action()
+    {
+        if (!$this->is_our_page()) {
+            return;
+        }
+
+        if (isset($_GET['bfwp_action']) && $_GET['bfwp_action'] === 'unblock_ip' && isset($_GET['ip'])) {
+            $ip = sanitize_text_field($_GET['ip']);
+            if (!wp_verify_nonce(sanitize_key($_GET['_wpnonce'] ?? ''), 'blockforce_unblock_' . $ip)) {
+                wp_die(__('Security check failed.', $this->text_domain));
+            }
+
+            $this->core->security->unblock_ip($ip);
+            add_settings_error('blockforce_messages', 'unblock_success', sprintf(__('IP %s unblocked successfully.', $this->text_domain), $ip), 'updated');
+
+            wp_safe_redirect(admin_url('admin.php?page=blockforce-wp-blocks'));
+            exit;
+        }
+    }
+
     private function is_our_page()
     {
         if (!is_admin() || !current_user_can('manage_options')) {
@@ -165,13 +201,13 @@ class BlockForce_WP_Admin
             if (isset($_POST['blocked_ips']) && is_array($_POST['blocked_ips'])) {
                 $count = 0;
                 foreach ($_POST['blocked_ips'] as $ip) {
-                    delete_option('bfwp_blocked_' . sanitize_text_field($ip));
+                    $this->core->security->unblock_ip(sanitize_text_field($ip));
                     $count++;
                 }
                 add_settings_error('blockforce_messages', 'bulk_success', sprintf(_n('%d IP unblocked.', '%d IPs unblocked.', $count, $this->text_domain), $count), 'updated');
             }
 
-            wp_safe_redirect(admin_url('admin.php?page=blockforce-wp'));
+            wp_safe_redirect(admin_url('admin.php?page=blockforce-wp-blocks'));
             exit;
         }
     }
