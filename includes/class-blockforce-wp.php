@@ -72,6 +72,19 @@ class BlockForce_WP
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
 
+        $table_blocks = $wpdb->prefix . 'blockforce_blocks';
+        $sql_blocks = "CREATE TABLE $table_blocks (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            user_ip varchar(100) NOT NULL,
+            blocked_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            expires_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            reason varchar(255) DEFAULT '',
+            PRIMARY KEY  (id),
+            KEY ip_index (user_ip),
+            KEY expires_index (expires_at)
+        ) $charset_collate;";
+        dbDelta($sql_blocks);
+
         // Call global activation function for settings and cron
         if (function_exists('blockforce_wp_activate')) {
             blockforce_wp_activate();

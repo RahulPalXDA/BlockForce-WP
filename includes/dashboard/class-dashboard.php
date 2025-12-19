@@ -267,54 +267,39 @@ class BlockForce_WP_Dashboard
         global $wpdb;
 
         // Blocked IPs (Active and Today)
-        $blocked_ips = $wpdb->get_results(
+        $table_blocks = $wpdb->prefix . 'blockforce_blocks';
+
+        // Count active blocks
+        $active_blocks = (int) $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name NOT LIKE %s",
-                $wpdb->esc_like('bfwp_blocked_') . '%',
-                $wpdb->esc_like('_transient_') . '%'
+                "SELECT COUNT(*) FROM $table_blocks WHERE expires_at > %s",
+                current_time('mysql')
             )
         );
 
-        $current_time = time();
-        $day_ago_timestamp = $current_time - DAY_IN_SECONDS;
-        $day_ago_mysql = current_time('mysql', false); // This might be slightly offset depending on TZ but good enough for simple stats, or better:
+        // Count blocks today
         $day_ago_mysql = date('Y-m-d H:i:s', strtotime('-1 day', current_time('timestamp')));
-
-        $blocked_today = 0;
-        $active_blocks = 0;
-
-        foreach ($blocked_ips as $blocked) {
-            $parts = explode('|', $blocked->option_value);
-            if (count($parts) === 2) {
-                $expires_at = intval($parts[1]);
-                if ($current_time < $expires_at) {
-                    $active_blocks++;
-                    $blocked_time = intval($parts[0]);
-                    if ($blocked_time >= $day_ago_timestamp) {
-                        $blocked_today++;
-                    }
-                }
-            } else {
-                // Fallback for potentially unstructured data ? although we structured it.
-                // Assuming standard format is used.
-                $active_blocks++;
-            }
-        }
+        $blocked_today = (int) $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT COUNT(*) FROM $table_blocks WHERE blocked_at > %s",
+                $day_ago_mysql
+            )
+        );
 
         // Persistent Logs for Failed Attempts (More accurate than transients)
-        $table_name = $wpdb->prefix . 'blockforce_logs';
-        // Check if table exists first to avoid fatal errors if installation failed
-        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name) {
+        $table_logs = $wpdb->prefix . 'blockforce_logs';
+
+        // Low-level check if table exists to avoid errors on fresh installs before migration
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table_logs'") === $table_logs) {
             $attempts_today = (int) $wpdb->get_var(
                 $wpdb->prepare(
-                    "SELECT COUNT(*) FROM $table_name WHERE status = 'failed' AND time > %s",
+                    "SELECT COUNT(*) FROM $table_logs WHERE status = 'failed' AND time > %s",
                     $day_ago_mysql
                 )
             );
         } else {
             $attempts_today = 0;
         }
-
 
         return array(
             'blocked_today' => $blocked_today,

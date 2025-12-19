@@ -158,32 +158,47 @@ class BlockForce_WP_Security
             return false;
         }
 
-        $block_data = get_option('bfwp_blocked_' . $user_ip);
-        if ($block_data !== false) {
-            $parts = explode('|', $block_data);
-            if (count($parts) === 2) {
-                $expires_at = intval($parts[1]);
-                if (BlockForce_WP_Utils::get_current_time() < $expires_at) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'blockforce_blocks';
+
+        $blocked = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT id FROM $table_name WHERE user_ip = %s AND expires_at > %s",
+                $user_ip,
+                current_time('mysql')
+            )
+        );
+
+        return $blocked !== null;
     }
 
     private function block_ip($user_ip, $block_time)
     {
-        $current_time = BlockForce_WP_Utils::get_current_time();
-        $expires_at = $current_time + $block_time;
-        $value = $current_time . '|' . $expires_at;
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'blockforce_blocks';
+        $current_time = current_time('mysql');
+        $expires_at = date('Y-m-d H:i:s', strtotime("+$block_time seconds", strtotime($current_time)));
 
-        add_option('bfwp_blocked_' . $user_ip, $value, '', 'no');
-        update_option('bfwp_blocked_' . $user_ip, $value, 'no');
+        // Clean up any existing active blocks for this IP first to avoid duplicates
+        $wpdb->delete($table_name, array('user_ip' => $user_ip));
+
+        $wpdb->insert(
+            $table_name,
+            array(
+                'user_ip' => $user_ip,
+                'blocked_at' => $current_time,
+                'expires_at' => $expires_at,
+                'reason' => 'failed_login_attempts',
+            ),
+            array('%s', '%s', '%s', '%s')
+        );
     }
 
     public function unblock_ip($user_ip)
     {
-        delete_option('bfwp_blocked_' . $user_ip);
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'blockforce_blocks';
+        $wpdb->delete($table_name, array('user_ip' => $user_ip));
         delete_transient('bfwp_attempts_' . $user_ip);
     }
 
@@ -191,10 +206,19 @@ class BlockForce_WP_Security
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'blockforce_logs';
-        
+
         // Delete logs older than 30 days
         $wpdb->query(
             "DELETE FROM $table_name WHERE time < DATE_SUB(NOW(), INTERVAL 30 DAY)"
+        );
+
+        // Clean up expired blocks
+        $table_blocks = $wpdb->prefix . 'blockforce_blocks';
+        $wpdb->query(
+            $wpdb->prepare(
+                "DELETE FROM $table_blocks WHERE expires_at < %s",
+                current_time('mysql')
+            )
         );
     }
 }

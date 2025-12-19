@@ -44,10 +44,13 @@ function blockforce_wp_uninstall_cleanup()
     delete_option('blockforce_login_slug');
     delete_option('blockforce_attempts');
 
-    $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE 'bfwp_blocked_%'");
+    // Drop Logs Table
+    $table_logs = $wpdb->prefix . 'blockforce_logs';
+    $wpdb->query("DROP TABLE IF EXISTS $table_logs");
 
-    $table_name = $wpdb->prefix . 'blockforce_logs';
-    $wpdb->query("DROP TABLE IF EXISTS $table_name");
+    // Drop Blocks Table
+    $table_blocks = $wpdb->prefix . 'blockforce_blocks';
+    $wpdb->query("DROP TABLE IF EXISTS $table_blocks");
 
     wp_clear_scheduled_hook('blockforce_cleanup');
     blockforce_wp_clear_all_transients();
@@ -59,8 +62,6 @@ function blockforce_wp_clear_all_transients()
     global $wpdb;
 
     $patterns = array(
-        $wpdb->esc_like('_transient_bfwp_blocked_') . '%',
-        $wpdb->esc_like('_transient_timeout_bfwp_blocked_') . '%',
         $wpdb->esc_like('_transient_bfwp_attempts_') . '%',
         $wpdb->esc_like('_transient_timeout_bfwp_attempts_') . '%'
     );
@@ -69,20 +70,14 @@ function blockforce_wp_clear_all_transients()
         $wpdb->prepare(
             "DELETE FROM {$wpdb->options} 
              WHERE option_name LIKE %s 
-                OR option_name LIKE %s 
-                OR option_name LIKE %s 
                 OR option_name LIKE %s",
             $patterns[0],
-            $patterns[1],
-            $patterns[2],
-            $patterns[3]
+            $patterns[1]
         )
     );
 
     if (is_multisite()) {
         $site_patterns = array(
-            $wpdb->esc_like('_site_transient_bfwp_blocked_') . '%',
-            $wpdb->esc_like('_site_transient_timeout_bfwp_blocked_') . '%',
             $wpdb->esc_like('_site_transient_bfwp_attempts_') . '%',
             $wpdb->esc_like('_site_transient_timeout_bfwp_attempts_') . '%'
         );
@@ -91,13 +86,9 @@ function blockforce_wp_clear_all_transients()
             $wpdb->prepare(
                 "DELETE FROM {$wpdb->sitemeta} 
                  WHERE meta_key LIKE %s 
-                    OR meta_key LIKE %s 
-                    OR meta_key LIKE %s 
                     OR meta_key LIKE %s",
                 $site_patterns[0],
-                $site_patterns[1],
-                $site_patterns[2],
-                $site_patterns[3]
+                $site_patterns[1]
             )
         );
     }
