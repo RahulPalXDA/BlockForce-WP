@@ -71,5 +71,10 @@ class BlockForce_WP
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
+
+        // Call global activation function for settings and cron
+        if (function_exists('blockforce_wp_activate')) {
+            blockforce_wp_activate();
+        }
     }
 }
