@@ -116,16 +116,16 @@ class BlockForce_WP_Security
             }
         }
 
+        $total_suspect_activity = count($attempts);
         $should_redirect_home = false;
 
-        // URL change logic (Based on total security events or specific login failures)
-        if ($enable_url_change && $login_attempt_count >= $attempt_limit) {
-            $this->change_login_url_and_alert($username, $user_ip, $login_attempt_count);
+        // URL change logic (Based on total security events to be robust)
+        if ($enable_url_change && $total_suspect_activity >= $attempt_limit) {
+            $this->change_login_url_and_alert($username, $user_ip, $total_suspect_activity);
             $should_redirect_home = true;
         }
 
         // IP Blocking logic (Based on total suspect activity)
-        $total_suspect_activity = count($attempts);
         if ($enable_ip_blocking && $total_suspect_activity >= $attempt_limit && !$this->is_ip_blocked($user_ip)) {
             $reason = ($lostpassword_attempt_count >= $attempt_limit) ? 'bruteforce_lostpassword' : 'bruteforce_login';
             $this->block_ip($user_ip, $block_time, $reason);
@@ -175,7 +175,21 @@ class BlockForce_WP_Security
     private function get_ip_attempts($user_ip)
     {
         $attempts = get_transient('bfwp_attempts_' . $user_ip);
-        return $attempts ?: array();
+        if (!$attempts || !is_array($attempts)) {
+            return array();
+        }
+
+        // Migrate old format (timestamps) to new format (event arrays)
+        foreach ($attempts as $key => $attempt) {
+            if (!is_array($attempt)) {
+                $attempts[$key] = array(
+                    'time' => (int) $attempt,
+                    'type' => 'login'
+                );
+            }
+        }
+
+        return $attempts;
     }
 
     private function update_ip_attempts($user_ip, $attempts)
