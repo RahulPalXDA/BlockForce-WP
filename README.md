@@ -16,9 +16,11 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 | Feature | Description |
 |---------|-------------|
 | 🛡️ **Brute Force Protection** | Automatically blocks IPs after failed login attempts |
-| 🔒 **Persistent Blocking** | Blocks stored in database, survives cookie clears |
+| 🔑 **Forgot Password Protection** | Detects and blocks brute-force attacks on the lost password form |
+| 🔒 **Persistent Blocking** | Blocks stored in custom database tables, survives cookie clears |
 | 🔄 **Auto URL Change** | Automatically changes login URL when attacks persist |
-| 📋 **Activity Log** | Detailed log of all login attempts with pagination |
+| 📋 **Activity Log** | Detailed log of all login attempts and security events |
+| 🗓️ **Log Retention** | Configurable auto-cleanup for logs (1-365 days) |
 | 📧 **Email Alerts** | Get notified when your login URL changes |
 | 👻 **Stealth Mode** | Default wp-login.php redirects to 404 when custom URL active |
 | 📊 **Dashboard Widget** | Quick security overview on your dashboard |
@@ -50,6 +52,7 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 | Maximum Failed Attempts | Attempts before triggering protection | 2 |
 | IP Block Duration | How long to block malicious IPs | 120 seconds |
 | Attack Monitoring Window | Window for tracking persistent attacks | 7200 seconds |
+| Log Retention (Days) | How long to keep security logs | 30 days |
 | Enable IP Blocking | Block IPs after failed attempts | Enabled |
 | Enable Auto URL Change | Change URL on persistent attacks | Enabled |
 | Security Alert Email | Email for notifications | Admin email |
@@ -71,9 +74,10 @@ Block duration expires automatically (default: 2 minutes)
 
 **Method 2: Unblock via database**
 ```sql
-DELETE FROM wp_options WHERE option_name = 'bfwp_blocked_YOUR.IP.ADDRESS';
+-- Replace {prefix} with your actual table prefix (usually wp_)
+DELETE FROM wp_blockforce_blocks WHERE user_ip = 'YOUR.IP.ADDRESS';
 ```
-Replace `YOUR.IP.ADDRESS` with your actual IP (e.g., `192.168.1.100`)
+Replace `YOUR.IP.ADDRESS` with your actual IP.
 
 **Method 3: Reset secret login URL**
 ```sql

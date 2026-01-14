@@ -17,9 +17,11 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 = Key Features =
 
 * **Brute Force Protection** – Automatically blocks IPs after failed login attempts
-* **Persistent Blocking** – Blocks stored in database, protection survives cookie clears
+* **Forgot Password Protection** – Detects and blocks brute-force attempts on the lost password form
+* **Persistent Blocking** – Blocks stored in custom database tables, protection survives cookie clears
 * **Auto URL Change** – Automatically changes login URL when attacks persist
-* **Activity Log** – Detailed log of all login attempts with pagination and bulk delete
+* **Activity Log** – Detailed log of all login attempts and security events
+* **Log Retention** – Configurable auto-cleanup for logs (1-365 days)
 * **Email Alerts** – Get notified when your login URL changes
 * **Stealth Mode** – Default wp-login.php and wp-admin redirect to 404 when custom URL is active
 * **Dashboard Widget** – Quick overview of security status on your dashboard
@@ -48,9 +50,9 @@ If you get locked out, try these methods:
 Block duration expires automatically (default: 2 minutes, configurable in settings)
 
 **Method 2: Use phpMyAdmin or database tool**
-Run this SQL query to unblock your IP:
-`DELETE FROM wp_options WHERE option_name = 'bfwp_blocked_YOUR.IP.ADDRESS';`
-Replace `YOUR.IP.ADDRESS` with your actual IP (e.g., `192.168.1.100`)
+Run this SQL query to unblock your IP (replace `wp_` with your actual table prefix):
+`DELETE FROM wp_blockforce_blocks WHERE user_ip = 'YOUR.IP.ADDRESS';`
+Replace `YOUR.IP.ADDRESS` with your actual IP.
 
 **Method 3: Reset the secret login URL**
 If you forgot your secret login URL, run:
