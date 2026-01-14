@@ -267,7 +267,7 @@ class BlockForce_WP_Dashboard
         global $wpdb;
 
         // Blocked IPs (Active and Today)
-        $table_blocks = $wpdb->prefix . 'blockforce_blocks';
+        $table_blocks = $wpdb->prefix . BFWP_BLOCKS_TABLE;
 
         // Count active blocks
         $active_blocks = (int) $wpdb->get_var(
@@ -287,7 +287,7 @@ class BlockForce_WP_Dashboard
         );
 
         // Persistent Logs for Failed Attempts (More accurate than transients)
-        $table_logs = $wpdb->prefix . 'blockforce_logs';
+        $table_logs = $wpdb->prefix . BFWP_LOGS_TABLE;
 
         // Low-level check if table exists to avoid errors on fresh installs before migration
         if ($wpdb->get_var("SHOW TABLES LIKE '$table_logs'") === $table_logs) {

@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
 }
 
 global $wpdb;
-$table_name = $wpdb->prefix . 'blockforce_blocks';
+$table_name = $wpdb->prefix . BFWP_BLOCKS_TABLE;
 $items_per_page = 20;
 $page = isset($_GET['paged']) ? max(1, intval($_GET['paged'])) : 1;
 $offset = ($page - 1) * $items_per_page;

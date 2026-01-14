@@ -20,6 +20,7 @@ class BlockForce_WP
         'attempt_limit' => 3,
         'block_time' => 3600,
         'log_time' => 2592000,
+        'log_retention_days' => 30,
         'enable_url_change' => 1,
         'enable_ip_blocking' => 1,
         'disable_debug_logs' => 1,
@@ -57,7 +58,7 @@ class BlockForce_WP
     public static function activate()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'blockforce_logs';
+        $table_name = $wpdb->prefix . BFWP_LOGS_TABLE;
         $charset_collate = $wpdb->get_charset_collate();
 
         $sql = "CREATE TABLE $table_name (
@@ -74,7 +75,7 @@ class BlockForce_WP
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
 
-        $table_blocks = $wpdb->prefix . 'blockforce_blocks';
+        $table_blocks = $wpdb->prefix . BFWP_BLOCKS_TABLE;
         $sql_blocks = "CREATE TABLE $table_blocks (
             id bigint(20) NOT NULL AUTO_INCREMENT,
             user_ip varchar(100) NOT NULL,

@@ -26,7 +26,8 @@ $site_url = get_site_url();
                         class="blockforce-status-title"><?php esc_html_e('Secret Login URL is ACTIVE', $text_domain); ?></strong>
                 </p>
                 <p class="blockforce-mb-0 blockforce-mt-0">
-                    <strong><?php esc_html_e('Your login page:', $text_domain); ?></strong></p>
+                    <strong><?php esc_html_e('Your login page:', $text_domain); ?></strong>
+                </p>
                 <div class="blockforce-url-display"><?php echo esc_url($site_url . '/' . $current_slug); ?></div>
                 <p class="blockforce-mt-15 blockforce-text-muted">
                     <span class="dashicons dashicons-info"></span>
@@ -39,7 +40,8 @@ $site_url = get_site_url();
                         class="blockforce-status-title"><?php esc_html_e('Default Login URL Active', $text_domain); ?></strong>
                 </p>
                 <p class="blockforce-mb-0 blockforce-mt-0">
-                    <strong><?php esc_html_e('Your login page:', $text_domain); ?></strong></p>
+                    <strong><?php esc_html_e('Your login page:', $text_domain); ?></strong>
+                </p>
                 <div class="blockforce-url-display"><?php echo esc_url($site_url . '/wp-login.php'); ?></div>
                 <p class="blockforce-mt-15 blockforce-text-muted">
                     <span class="dashicons dashicons-info"></span>
@@ -53,12 +55,9 @@ $site_url = get_site_url();
         <h2><?php esc_html_e('Blocked IP Addresses', $text_domain); ?></h2>
         <?php
         global $wpdb;
+        $table_name = $wpdb->prefix . BFWP_BLOCKS_TABLE;
         $blocked_ips = $wpdb->get_results(
-            $wpdb->prepare(
-                "SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name NOT LIKE %s",
-                $wpdb->esc_like('bfwp_blocked_') . '%',
-                $wpdb->esc_like('_transient_') . '%'
-            )
+            "SELECT user_ip, blocked_at, expires_at FROM $table_name ORDER BY blocked_at DESC LIMIT 5"
         );
 
         if (!empty($blocked_ips)): ?>
@@ -82,25 +81,23 @@ $site_url = get_site_url();
                     </thead>
                     <tbody>
                         <?php foreach ($blocked_ips as $blocked):
-                            $ip = str_replace('bfwp_blocked_', '', $blocked->option_name);
-                            $parts = explode('|', $blocked->option_value);
-                            $blocked_time = intval($parts[0]);
-                            $expires_at = count($parts) === 2 ? intval($parts[1]) : 0;
-                            $is_active = $expires_at ? time() < $expires_at : true;
+                            $ip = $blocked->user_ip;
+                            $blocked_time = strtotime($blocked->blocked_at);
+                            $expires_at = strtotime($blocked->expires_at);
+                            $is_active = $expires_at > current_time('timestamp');
                             ?>
                             <tr>
                                 <td><input type="checkbox" name="blocked_ips[]" value="<?php echo esc_attr($ip); ?>"></td>
                                 <td><strong><?php echo esc_html($ip); ?></strong></td>
-                                <td><?php echo esc_html(human_time_diff($blocked_time, time()) . ' ago'); ?></td>
+                                <td><?php echo esc_html(human_time_diff($blocked_time, current_time('timestamp')) . ' ago'); ?>
+                                </td>
                                 <td>
                                     <?php if ($is_active): ?>
                                         <span
                                             class="blockforce-badge blockforce-badge-enabled"><?php esc_html_e('Active', $text_domain); ?></span>
-                                        <?php if ($expires_at): ?>
-                                            <span
-                                                class="blockforce-time-left">(<?php echo esc_html(human_time_diff(time(), $expires_at)); ?>
-                                                left)</span>
-                                        <?php endif; ?>
+                                        <span
+                                            class="blockforce-time-left">(<?php echo esc_html(human_time_diff(current_time('timestamp'), $expires_at)); ?>
+                                            left)</span>
                                     <?php else: ?>
                                         <span
                                             class="blockforce-badge blockforce-badge-disabled"><?php esc_html_e('Expired', $text_domain); ?></span>

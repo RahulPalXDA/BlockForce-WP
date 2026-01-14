@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 $text_domain = $args['text_domain'];
 
 global $wpdb;
-$table_name = $wpdb->prefix . 'blockforce_logs';
+$table_name = $wpdb->prefix . BFWP_LOGS_TABLE;
 
 if (isset($_POST['blockforce_log_action']) && sanitize_key($_POST['blockforce_log_action']) === 'delete' && isset($_POST['log_ids'])) {
     check_admin_referer('blockforce_log_bulk_action', '_wpnonce_log');
@@ -97,7 +97,7 @@ $logs = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name ORDER BY ti
     </form>
 </div>
 <script>
-    document.getElementById('cb-select-all').addEventListener('change', function  () {
+    document.getElementById('cb-select-all').addEventListener('change', function () {
         document.querySelectorAll('input[name="log_ids[]"]').forEach(cb => cb.checked = this.checked);
     });
 </script>

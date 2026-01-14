@@ -29,6 +29,7 @@ class BlockForce_WP_Admin_Settings
         add_settings_field('attempt_limit', __('Maximum Failed Attempts', $this->text_domain), array($this, 'render_attempt_limit'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('block_time', __('IP Block Duration', $this->text_domain), array($this, 'render_block_time'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('log_time', __('Attack Monitoring Window', $this->text_domain), array($this, 'render_log_time'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field('log_retention_days', __('Log Retention (Days)', $this->text_domain), array($this, 'render_log_retention_days'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('enable_ip_blocking', __('Enable IP Blocking', $this->text_domain), array($this, 'render_enable_ip_blocking'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('enable_url_change', __('Enable Auto URL Change', $this->text_domain), array($this, 'render_enable_url_change'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('disable_debug_logs', __('Strictly Disable Debug Logs', $this->text_domain), array($this, 'render_disable_debug_logs'), 'blockforce_settings', 'blockforce_main_section');
@@ -41,6 +42,7 @@ class BlockForce_WP_Admin_Settings
         $output['attempt_limit'] = max(1, (int) $input['attempt_limit']);
         $output['block_time'] = max(1, (int) $input['block_time']);
         $output['log_time'] = max(1, (int) $input['log_time']);
+        $output['log_retention_days'] = max(1, (int) $input['log_retention_days']);
         $output['enable_url_change'] = isset($input['enable_url_change']) ? 1 : 0;
         $output['disable_debug_logs'] = isset($input['disable_debug_logs']) ? 1 : 0;
         $output['enable_ip_blocking'] = isset($input['enable_ip_blocking']) ? 1 : 0;
@@ -111,6 +113,18 @@ class BlockForce_WP_Admin_Settings
             <?php esc_html_e('Monitoring window for persistent attacks. Default: 7200 seconds', $this->text_domain); ?>
         </p>
         <?php
+    }
+
+    public function render_log_retention_days()
+    {
+        ?>
+                <input type="number" name="blockforce_settings[log_retention_days]"
+                    value="<?php echo esc_attr($this->settings['log_retention_days'] ?? 30); ?>" min="1" max="365"
+                    class="blockforce-input-narrow">
+                <p class="description">
+                    <?php esc_html_e('Number of days to keep security logs. Highly active sites should keep this low. Default: 30', $this->text_domain); ?>
+                </p>
+                <?php
     }
 
     public function render_enable_url_change()

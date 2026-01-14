@@ -39,7 +39,7 @@ class BlockForce_WP_Security
     private function log_activity($username, $status)
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'blockforce_logs';
+        $table_name = $wpdb->prefix . BFWP_LOGS_TABLE;
         $user_ip = BlockForce_WP_Utils::get_user_ip();
 
         $wpdb->insert(
@@ -159,7 +159,7 @@ class BlockForce_WP_Security
         }
 
         global $wpdb;
-        $table_name = $wpdb->prefix . 'blockforce_blocks';
+        $table_name = $wpdb->prefix . BFWP_BLOCKS_TABLE;
 
         $blocked = $wpdb->get_var(
             $wpdb->prepare(
@@ -175,7 +175,7 @@ class BlockForce_WP_Security
     private function block_ip($user_ip, $block_time)
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'blockforce_blocks';
+        $table_name = $wpdb->prefix . BFWP_BLOCKS_TABLE;
         $current_time = current_time('mysql');
         $expires_at = date('Y-m-d H:i:s', strtotime("+$block_time seconds", strtotime($current_time)));
 
@@ -197,7 +197,7 @@ class BlockForce_WP_Security
     public function unblock_ip($user_ip)
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'blockforce_blocks';
+        $table_name = $wpdb->prefix . BFWP_BLOCKS_TABLE;
         $wpdb->delete($table_name, array('user_ip' => $user_ip));
         delete_transient('bfwp_attempts_' . $user_ip);
     }
@@ -205,15 +205,19 @@ class BlockForce_WP_Security
     public function cleanup_old_attempts()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'blockforce_logs';
+        $table_logs = $wpdb->prefix . BFWP_LOGS_TABLE;
+        $retention_days = isset($this->settings['log_retention_days']) ? (int) $this->settings['log_retention_days'] : 30;
 
-        // Delete logs older than 30 days
+        // Delete logs older than configured retention period
         $wpdb->query(
-            "DELETE FROM $table_name WHERE time < DATE_SUB(NOW(), INTERVAL 30 DAY)"
+            $wpdb->prepare(
+                "DELETE FROM $table_logs WHERE time < DATE_SUB(NOW(), INTERVAL %d DAY)",
+                $retention_days
+            )
         );
 
         // Clean up expired blocks
-        $table_blocks = $wpdb->prefix . 'blockforce_blocks';
+        $table_blocks = $wpdb->prefix . BFWP_BLOCKS_TABLE;
         $wpdb->query(
             $wpdb->prepare(
                 "DELETE FROM $table_blocks WHERE expires_at < %s",

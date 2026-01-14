@@ -12,6 +12,7 @@ function blockforce_wp_activate()
             'attempt_limit' => 2,
             'block_time' => 120,
             'log_time' => 7200,
+            'log_retention_days' => 30,
             'enable_url_change' => 1,
             'enable_ip_blocking' => 1,
             'disable_debug_logs' => 1,
@@ -45,11 +46,11 @@ function blockforce_wp_uninstall_cleanup()
     delete_option('blockforce_attempts');
 
     // Drop Logs Table
-    $table_logs = $wpdb->prefix . 'blockforce_logs';
+    $table_logs = $wpdb->prefix . BFWP_LOGS_TABLE;
     $wpdb->query("DROP TABLE IF EXISTS $table_logs");
 
     // Drop Blocks Table
-    $table_blocks = $wpdb->prefix . 'blockforce_blocks';
+    $table_blocks = $wpdb->prefix . BFWP_BLOCKS_TABLE;
     $wpdb->query("DROP TABLE IF EXISTS $table_blocks");
 
     wp_clear_scheduled_hook('blockforce_cleanup');

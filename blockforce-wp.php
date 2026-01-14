@@ -19,6 +19,8 @@ define('BFWP_PATH', plugin_dir_path(__FILE__));
 define('BFWP_URL', plugin_dir_url(__FILE__));
 define('BFWP_TEXT_DOMAIN', 'blockforce-wp');
 define('BFWP_BASENAME', plugin_basename(__FILE__));
+define('BFWP_LOGS_TABLE', 'blockforce_logs');
+define('BFWP_BLOCKS_TABLE', 'blockforce_blocks');
 
 require_once BFWP_PATH . 'includes/functions.php';
 require_once BFWP_PATH . 'includes/class-blockforce-wp.php';
