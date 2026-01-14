@@ -5,6 +5,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!defined('BFWP_LOGS_TABLE')) {
+    define('BFWP_LOGS_TABLE', 'blockforce_logs');
+}
+
+if (!defined('BFWP_BLOCKS_TABLE')) {
+    define('BFWP_BLOCKS_TABLE', 'blockforce_blocks');
+}
+
 function blockforce_wp_activate()
 {
     if (!get_option('blockforce_settings')) {
