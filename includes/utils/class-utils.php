@@ -48,28 +48,50 @@ class BlockForce_WP_Utils
     {
         $sets = get_option('blockforce_settings', array());
         $to = !empty($sets['alert_email']) ? $sets['alert_email'] : get_option('admin_email');
-        $site = get_bloginfo('name');
+        $site_name = get_bloginfo('name');
+        if (empty($site_name)) {
+            $site_name = 'WordPress Site';
+        }
         $url = get_site_url();
-        $login = $url . '/' . $slug;
-        $time = current_time('mysql');
-        $subject = sprintf('[%s] WordPress Login URL Updated', $site);
+        $user_ip = !empty($ip) ? $ip : '0.0.0.0';
+        $new_login_url = $url . '/' . $slug;
+        $current_date_time = current_time('mysql');
+        if (empty($current_date_time)) {
+            $current_date_time = date('Y-m-d H:i:s');
+        }
+        if (empty($new_login_url) || empty($slug)) {
+            error_log('BlockForce WP: Failed to generate login URL - slug is empty');
+            return false;
+        }
+        $subject = sprintf('[%s] WordPress Login URL Updated', $site_name);
         $tpl = BFWP_PATH . 'includes/email/alert-template.php';
         if (file_exists($tpl)) {
             ob_start();
             include $tpl;
             $html = ob_get_clean();
+            if (empty($html)) {
+                error_log('BlockForce WP: Email template generated empty HTML');
+                $html = "<p>New Login URL: <a href='" . esc_url($new_login_url) . "'>" . esc_url($new_login_url) . "</a></p>";
+            }
         } else {
-            $html = "<p>New Login URL: <a href='" . esc_url($login) . "'>" . esc_url($login) . "</a></p>";
+            error_log('BlockForce WP: Email template file not found at ' . $tpl);
+            $html = "<p>New Login URL: <a href='" . esc_url($new_login_url) . "'>" . esc_url($new_login_url) . "</a></p>";
         }
-        $plain = "Login URL Updated\nIP: $ip\nTime: $time\nNew URL: $login";
+        $plain = "Login URL Updated\nIP: $user_ip\nTime: $current_date_time\nNew URL: $new_login_url";
         $domain = parse_url($url, PHP_URL_HOST);
         if (substr($domain, 0, 4) === 'www.')
             $domain = substr($domain, 4);
-        $headers = array('From: ' . $site . ' <wordpress@' . $domain . '>', 'Reply-To: ' . get_option('admin_email'), 'Content-Type: text/html; charset=UTF-8');
+        if (empty($domain)) {
+            $domain = 'localhost';
+        }
+        $headers = array('From: ' . $site_name . ' <wordpress@' . $domain . '>', 'Reply-To: ' . get_option('admin_email'), 'Content-Type: text/html; charset=UTF-8');
         $sent = wp_mail($to, $subject, $html, $headers);
         if (!$sent) {
             $headers[2] = 'Content-Type: text/plain; charset=UTF-8';
             $sent = wp_mail($to, $subject, $plain, $headers);
+        }
+        if (!$sent) {
+            error_log('BlockForce WP: Failed to send admin alert email to ' . $to);
         }
         return $sent;
     }
