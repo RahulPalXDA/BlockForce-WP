@@ -83,6 +83,8 @@ $base_url = admin_url('admin.php?page=blockforce-wp-blocks');
                         <th scope="col" class="manage-column column-primary">
                             <?php esc_html_e('IP Address', $args['text_domain']); ?>
                         </th>
+                        <th scope="col" class="manage-column"><?php esc_html_e('User Agent', $args['text_domain']); ?>
+                        </th>
                         <th scope="col" class="manage-column"><?php esc_html_e('Blocked At', $args['text_domain']); ?>
                         </th>
                         <th scope="col" class="manage-column"><?php esc_html_e('Expires At', $args['text_domain']); ?>
@@ -94,7 +96,7 @@ $base_url = admin_url('admin.php?page=blockforce-wp-blocks');
                 <tbody id="the-list">
                     <?php if (empty($blocked_ips)): ?>
                         <tr>
-                            <td colspan="6"><?php esc_html_e('No blocked IPs found.', $args['text_domain']); ?></td>
+                            <td colspan="7"><?php esc_html_e('No blocked IPs found.', $args['text_domain']); ?></td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($blocked_ips as $ip): ?>
@@ -105,6 +107,10 @@ $base_url = admin_url('admin.php?page=blockforce-wp-blocks');
                                 <td class="column-primary"
                                     data-colname="<?php esc_attr_e('IP Address', $args['text_domain']); ?>">
                                     <strong><?php echo esc_html($ip->user_ip); ?></strong>
+                                </td>
+                                <td data-colname="<?php esc_attr_e('User Agent', $args['text_domain']); ?>"
+                                    title="<?php echo esc_attr($ip->user_agent ?? ''); ?>">
+                                    <?php echo esc_html(BlockForce_WP_Utils::get_user_agent_name($ip->user_agent ?? '')); ?>
                                 </td>
                                 <td data-colname="<?php esc_attr_e('Blocked At', $args['text_domain']); ?>">
                                     <?php echo esc_html($ip->blocked_at); ?>

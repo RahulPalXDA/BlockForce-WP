@@ -63,6 +63,7 @@ $logs = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name ORDER BY ti
                     <td class="manage-column column-cb check-column"><input type="checkbox" id="cb-select-all"></td>
                     <th><?php esc_html_e('User', $text_domain); ?></th>
                     <th><?php esc_html_e('IP Address', $text_domain); ?></th>
+                    <th><?php esc_html_e('User Agent', $text_domain); ?></th>
                     <th><?php esc_html_e('Date & Time', $text_domain); ?></th>
                     <th><?php esc_html_e('Status', $text_domain); ?></th>
                 </tr>
@@ -75,6 +76,9 @@ $logs = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name ORDER BY ti
                                     value="<?php echo esc_attr($log->id); ?>"></th>
                             <td><strong><?php echo esc_html($log->user_login); ?></strong></td>
                             <td><?php echo esc_html($log->user_ip); ?></td>
+                            <td title="<?php echo esc_attr($log->user_agent ?? ''); ?>">
+                                <?php echo esc_html(BlockForce_WP_Utils::get_user_agent_name($log->user_agent ?? '')); ?>
+                            </td>
                             <td><?php echo esc_html(date_i18n('M j, Y @ g:i a', strtotime($log->time))); ?></td>
                             <td>
                                 <?php if ($log->status == 'success'): ?>
@@ -89,7 +93,7 @@ $logs = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table_name ORDER BY ti
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="5"><?php esc_html_e('No login activity recorded yet.', $text_domain); ?></td>
+                        <td colspan="6"><?php esc_html_e('No login activity recorded yet.', $text_domain); ?></td>
                     </tr>
                 <?php endif; ?>
             </tbody>

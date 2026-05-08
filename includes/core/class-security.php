@@ -49,18 +49,21 @@ class BlockForce_WP_Security
         global $wpdb;
         $table_name = $wpdb->prefix . BFWP_LOGS_TABLE;
         $user_ip = BlockForce_WP_Utils::get_user_ip();
+        $user_agent = BlockForce_WP_Utils::get_user_agent();
         $wpdb->insert($table_name, array(
             'user_login' => $username,
             'user_ip' => $user_ip,
+            'user_agent' => $user_agent,
             'time' => current_time('mysql'),
             'status' => $status
-        ), array('%s', '%s', '%s', '%s'));
+        ), array('%s', '%s', '%s', '%s', '%s'));
     }
     public function track_security_event($username, $type = 'login')
     {
         if (BlockForce_WP_Utils::is_authentic_localhost())
             return;
         $user_ip = BlockForce_WP_Utils::get_user_ip();
+        $user_agent = BlockForce_WP_Utils::get_user_agent();
         $current_time = time();
         if (empty($user_ip))
             return;
@@ -86,12 +89,12 @@ class BlockForce_WP_Security
         $total_suspect_activity = count($attempts);
         $should_redirect_home = false;
         if ($enable_url_change && $total_suspect_activity >= $attempt_limit) {
-            $this->change_login_url_and_alert($username, $user_ip, $total_suspect_activity);
+            $this->change_login_url_and_alert($username, $user_ip, $total_suspect_activity, $user_agent);
             $should_redirect_home = true;
         }
         if ($enable_ip_blocking && $total_suspect_activity >= $attempt_limit && !$this->is_ip_blocked($user_ip)) {
             $reason = ($lostpassword_attempt_count >= $attempt_limit) ? 'bruteforce_lostpassword' : 'bruteforce_login';
-            $this->block_ip($user_ip, $block_time, $reason);
+            $this->block_ip($user_ip, $block_time, $reason, $user_agent);
             $should_redirect_home = true;
         }
         if ($should_redirect_home) {
@@ -99,10 +102,10 @@ class BlockForce_WP_Security
             exit;
         }
     }
-    private function change_login_url_and_alert($username, $user_ip, $attempt_count)
+    private function change_login_url_and_alert($username, $user_ip, $attempt_count, $user_agent)
     {
         $new_login_slug = BlockForce_WP_Utils::generate_random_slug();
-        if (BlockForce_WP_Utils::send_admin_alert($user_ip, $new_login_slug)) {
+        if (BlockForce_WP_Utils::send_admin_alert($user_ip, $new_login_slug, $user_agent)) {
             update_option('blockforce_login_slug', $new_login_slug);
             $this->core->login_url->flush_rewrite_rules();
         }
@@ -147,14 +150,14 @@ class BlockForce_WP_Security
         global $wpdb;
         return $wpdb->get_var($wpdb->prepare("SELECT id FROM {$wpdb->prefix}" . BFWP_BLOCKS_TABLE . " WHERE user_ip = %s AND expires_at > %s", $user_ip, current_time('mysql'))) !== null;
     }
-    private function block_ip($user_ip, $block_time, $reason = 'failed_login_attempts')
+    private function block_ip($user_ip, $block_time, $reason = 'failed_login_attempts', $user_agent = '')
     {
         global $wpdb;
         $table_name = $wpdb->prefix . BFWP_BLOCKS_TABLE;
         $current_time = current_time('mysql');
         $expires_at = date('Y-m-d H:i:s', strtotime("+$block_time seconds", strtotime($current_time)));
         $wpdb->delete($table_name, array('user_ip' => $user_ip));
-        $wpdb->insert($table_name, array('user_ip' => $user_ip, 'blocked_at' => $current_time, 'expires_at' => $expires_at, 'reason' => $reason), array('%s', '%s', '%s', '%s'));
+        $wpdb->insert($table_name, array('user_ip' => $user_ip, 'user_agent' => $user_agent, 'blocked_at' => $current_time, 'expires_at' => $expires_at, 'reason' => $reason), array('%s', '%s', '%s', '%s', '%s'));
     }
     public function unblock_ip($user_ip)
     {

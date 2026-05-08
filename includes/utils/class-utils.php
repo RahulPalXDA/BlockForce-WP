@@ -13,6 +13,48 @@ class BlockForce_WP_Utils
         }
         return '127.0.0.1';
     }
+    public static function get_user_agent()
+    {
+        if (empty($_SERVER['HTTP_USER_AGENT']))
+            return '';
+        return substr(sanitize_text_field(wp_unslash($_SERVER['HTTP_USER_AGENT'])), 0, 255);
+    }
+    public static function get_user_agent_name($user_agent = '')
+    {
+        $user_agent = $user_agent ? $user_agent : self::get_user_agent();
+        if (empty($user_agent))
+            return 'Unknown';
+        $agent = strtolower($user_agent);
+        if (strpos($agent, 'googlebot') !== false)
+            return 'Googlebot';
+        if (strpos($agent, 'bingbot') !== false)
+            return 'Bingbot';
+        if (strpos($agent, 'ahrefs') !== false)
+            return 'AhrefsBot';
+        if (strpos($agent, 'semrush') !== false)
+            return 'SemrushBot';
+        if (strpos($agent, 'facebookexternalhit') !== false)
+            return 'Facebook Crawler';
+        if (strpos($agent, 'curl') !== false)
+            return 'curl';
+        if (strpos($agent, 'wget') !== false)
+            return 'wget';
+        if (strpos($agent, 'python-requests') !== false)
+            return 'Python Requests';
+        if (strpos($agent, 'go-http-client') !== false)
+            return 'Go HTTP Client';
+        if (strpos($agent, 'edg/') !== false || strpos($agent, 'edge/') !== false)
+            return 'Microsoft Edge';
+        if (strpos($agent, 'opr/') !== false || strpos($agent, 'opera') !== false)
+            return 'Opera';
+        if (strpos($agent, 'chrome/') !== false || strpos($agent, 'crios/') !== false)
+            return 'Google Chrome';
+        if (strpos($agent, 'firefox/') !== false || strpos($agent, 'fxios/') !== false)
+            return 'Mozilla Firefox';
+        if (strpos($agent, 'safari/') !== false)
+            return 'Safari';
+        return 'Other';
+    }
     public static function is_localhost_ip($ip)
     {
         if (empty($ip))
@@ -44,7 +86,7 @@ class BlockForce_WP_Utils
             return substr(str_replace(array('-', '_'), '', wp_generate_password(12, false)), 0, 12);
         }
     }
-    public static function send_admin_alert($ip, $slug)
+    public static function send_admin_alert($ip, $slug, $user_agent = '')
     {
         $sets = get_option('blockforce_settings', array());
         $to = !empty($sets['alert_email']) ? $sets['alert_email'] : get_option('admin_email');
@@ -54,6 +96,8 @@ class BlockForce_WP_Utils
         }
         $url = get_site_url();
         $user_ip = !empty($ip) ? $ip : '0.0.0.0';
+        $user_agent = $user_agent ? substr(sanitize_text_field($user_agent), 0, 255) : self::get_user_agent();
+        $user_agent_name = self::get_user_agent_name($user_agent);
         $new_login_url = $url . '/' . $slug;
         $current_date_time = current_time('mysql');
         if (empty($current_date_time)) {
@@ -71,13 +115,13 @@ class BlockForce_WP_Utils
             $html = ob_get_clean();
             if (empty($html)) {
                 error_log('BlockForce WP: Email template generated empty HTML');
-                $html = "<p>New Login URL: <a href='" . esc_url($new_login_url) . "'>" . esc_url($new_login_url) . "</a></p>";
+                $html = "<p>User Agent: " . esc_html($user_agent_name) . " (" . esc_html($user_agent) . ")</p><p>New Login URL: <a href='" . esc_url($new_login_url) . "'>" . esc_url($new_login_url) . "</a></p>";
             }
         } else {
             error_log('BlockForce WP: Email template file not found at ' . $tpl);
-            $html = "<p>New Login URL: <a href='" . esc_url($new_login_url) . "'>" . esc_url($new_login_url) . "</a></p>";
+            $html = "<p>User Agent: " . esc_html($user_agent_name) . " (" . esc_html($user_agent) . ")</p><p>New Login URL: <a href='" . esc_url($new_login_url) . "'>" . esc_url($new_login_url) . "</a></p>";
         }
-        $plain = "Login URL Updated\nIP: $user_ip\nTime: $current_date_time\nNew URL: $new_login_url";
+        $plain = "Login URL Updated\nIP: $user_ip\nUser Agent: $user_agent_name\nRaw User Agent: $user_agent\nTime: $current_date_time\nNew URL: $new_login_url";
         $domain = parse_url($url, PHP_URL_HOST);
         if (substr($domain, 0, 4) === 'www.')
             $domain = substr($domain, 4);

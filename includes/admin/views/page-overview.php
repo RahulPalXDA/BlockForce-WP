@@ -57,7 +57,7 @@ $site_url = get_site_url();
         global $wpdb;
         $table_name = $wpdb->prefix . BFWP_BLOCKS_TABLE;
         $blocked_ips = $wpdb->get_results(
-            "SELECT user_ip, blocked_at, expires_at FROM $table_name ORDER BY blocked_at DESC LIMIT 5"
+            "SELECT user_ip, user_agent, blocked_at, expires_at FROM $table_name ORDER BY blocked_at DESC LIMIT 5"
         );
 
         if (!empty($blocked_ips)): ?>
@@ -75,6 +75,7 @@ $site_url = get_site_url();
                         <tr>
                             <th class="blockforce-col-checkbox"><input type="checkbox" id="select-all-ips"></th>
                             <th><?php esc_html_e('IP Address', $text_domain); ?></th>
+                            <th><?php esc_html_e('User Agent', $text_domain); ?></th>
                             <th><?php esc_html_e('Blocked Since', $text_domain); ?></th>
                             <th><?php esc_html_e('Status', $text_domain); ?></th>
                         </tr>
@@ -89,6 +90,9 @@ $site_url = get_site_url();
                             <tr>
                                 <td><input type="checkbox" name="blocked_ips[]" value="<?php echo esc_attr($ip); ?>"></td>
                                 <td><strong><?php echo esc_html($ip); ?></strong></td>
+                                <td title="<?php echo esc_attr($blocked->user_agent ?? ''); ?>">
+                                    <?php echo esc_html(BlockForce_WP_Utils::get_user_agent_name($blocked->user_agent ?? '')); ?>
+                                </td>
                                 <td><?php echo esc_html(human_time_diff($blocked_time, current_time('timestamp')) . ' ago'); ?>
                                 </td>
                                 <td>

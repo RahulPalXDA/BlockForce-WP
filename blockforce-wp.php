@@ -11,6 +11,7 @@ declare(strict_types=1);
 if (!defined('ABSPATH'))
     exit;
 define('BFWP_VERSION', '1.1.0');
+define('BFWP_DB_VERSION', '1.1.1');
 define('BFWP_PATH', plugin_dir_path(__FILE__));
 define('BFWP_URL', plugin_dir_url(__FILE__));
 define('BFWP_TEXT_DOMAIN', 'blockforce-wp');

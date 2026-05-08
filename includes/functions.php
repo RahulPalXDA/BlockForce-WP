@@ -25,6 +25,7 @@ function blockforce_wp_uninstall_cleanup()
 {
     global $wpdb;
     delete_option('blockforce_settings');
+    delete_option('blockforce_db_version');
     delete_option('blockforce_login_slug');
     delete_option('blockforce_attempts');
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}" . BFWP_LOGS_TABLE);

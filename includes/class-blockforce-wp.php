@@ -10,6 +10,7 @@ class BlockForce_WP
     {
         $this->settings = get_option('blockforce_settings', $this->def);
         $this->basename = $basename;
+        self::maybe_upgrade_schema();
         if (!empty($this->settings['disable_debug_logs'])) {
             error_reporting(0);
             @ini_set('display_errors', '0');
@@ -31,14 +32,26 @@ class BlockForce_WP
     }
     public static function activate()
     {
+        self::install_tables();
+        update_option('blockforce_db_version', BFWP_DB_VERSION);
+        if (function_exists('blockforce_wp_activate'))
+            blockforce_wp_activate();
+    }
+    public static function maybe_upgrade_schema()
+    {
+        if (get_option('blockforce_db_version') === BFWP_DB_VERSION)
+            return;
+        self::install_tables();
+        update_option('blockforce_db_version', BFWP_DB_VERSION);
+    }
+    private static function install_tables()
+    {
         global $wpdb;
         $coll = $wpdb->get_charset_collate();
-        $sql1 = "CREATE TABLE {$wpdb->prefix}" . BFWP_LOGS_TABLE . " (id bigint(20) NOT NULL AUTO_INCREMENT, user_login varchar(60) NOT NULL, user_ip varchar(100) NOT NULL, time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL, status varchar(20) NOT NULL, PRIMARY KEY (id), KEY status_time_index (status, time), KEY time_index (time)) $coll;";
-        $sql2 = "CREATE TABLE {$wpdb->prefix}" . BFWP_BLOCKS_TABLE . " (id bigint(20) NOT NULL AUTO_INCREMENT, user_ip varchar(100) NOT NULL, blocked_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL, expires_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL, reason varchar(255) DEFAULT '', PRIMARY KEY (id), KEY ip_index (user_ip), KEY expires_index (expires_at)) $coll;";
+        $sql1 = "CREATE TABLE {$wpdb->prefix}" . BFWP_LOGS_TABLE . " (id bigint(20) NOT NULL AUTO_INCREMENT, user_login varchar(60) NOT NULL, user_ip varchar(100) NOT NULL, user_agent varchar(255) DEFAULT '' NOT NULL, time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL, status varchar(20) NOT NULL, PRIMARY KEY (id), KEY status_time_index (status, time), KEY time_index (time)) $coll;";
+        $sql2 = "CREATE TABLE {$wpdb->prefix}" . BFWP_BLOCKS_TABLE . " (id bigint(20) NOT NULL AUTO_INCREMENT, user_ip varchar(100) NOT NULL, user_agent varchar(255) DEFAULT '' NOT NULL, blocked_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL, expires_at datetime DEFAULT '0000-00-00 00:00:00' NOT NULL, reason varchar(255) DEFAULT '', PRIMARY KEY (id), KEY ip_index (user_ip), KEY expires_index (expires_at)) $coll;";
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql1);
         dbDelta($sql2);
-        if (function_exists('blockforce_wp_activate'))
-            blockforce_wp_activate();
     }
 }

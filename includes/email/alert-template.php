@@ -12,6 +12,8 @@ if (!defined('ABSPATH')) {
 // It has access to the following variables:
 //
 // $user_ip           (string) The attacker's IP address
+// $user_agent        (string) The raw user-agent string
+// $user_agent_name   (string) The detected user-agent name
 // $new_login_url     (string) The new, secret login URL
 // $current_date_time (string) The date and time of the event
 // $site_name         (string) The site name
@@ -109,6 +111,8 @@ if (!defined('ABSPATH')) {
             <div class="info-box">
                 <strong><?php echo esc_html__('Activity Details:', 'blockforce-wp'); ?></strong><br>
                 <?php echo esc_html__('IP Address:', 'blockforce-wp'); ?> <?php echo esc_html($user_ip); ?><br>
+                <?php echo esc_html__('User Agent:', 'blockforce-wp'); ?> <?php echo esc_html($user_agent_name); ?><br>
+                <?php echo esc_html__('Raw User Agent:', 'blockforce-wp'); ?> <?php echo esc_html($user_agent); ?><br>
                 <?php echo esc_html__('Date & Time:', 'blockforce-wp'); ?> <?php echo esc_html($current_date_time); ?>
             </div>
 
