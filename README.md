@@ -5,11 +5,11 @@
 ![License](https://img.shields.io/badge/License-GPLv2-green)
 ![Version](https://img.shields.io/badge/Version-1.1.0-orange)
 
-Lightweight login security with IP blocking, automatic URL change, and email alerts.
+Lightweight login security with IP blocking, automatic URL change, user-agent tracking, and email alerts.
 
 ## Description
 
-BlockForce WP is a lightweight yet powerful security plugin designed to protect your WordPress login page from brute-force attacks. It combines persistent IP blocking, automatic login URL changing, and detailed activity logging into a simple, easy-to-use package.
+BlockForce WP is a lightweight yet powerful security plugin designed to protect your WordPress login page from brute-force attacks. It combines persistent IP blocking, automatic login URL changing, user-agent tracking, and detailed activity logging into a simple, easy-to-use package.
 
 ### Key Features
 
@@ -19,10 +19,12 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 | 🔑 **Forgot Password Protection** | Detects and blocks brute-force attacks on the lost password form |
 | 🔒 **Persistent Blocking** | Blocks stored in custom database tables, survives cookie clears |
 | 🔄 **Auto URL Change** | Automatically changes login URL when attacks persist |
-| 📋 **Activity Log** | Detailed log of all login attempts and security events |
+| 🧭 **User-Agent Tracking** | Records readable and raw user-agent details for login attempts and blocked IPs |
+| 📋 **Activity Log** | Detailed log of login attempts, IPs, user agents, and security events |
 | 🗓️ **Log Retention** | Configurable auto-cleanup for logs (1-365 days) |
-| 📧 **Email Alerts** | Get notified when your login URL changes |
+| 📧 **Email Alerts** | Get notified with IP and user-agent details when your login URL changes |
 | 👻 **Stealth Mode** | Default wp-login.php redirects to 404 when custom URL active |
+| 🔗 **Public Slug Protection** | Avoids exposing the secret login slug through public WordPress login links |
 | 📊 **Dashboard Widget** | Quick security overview on your dashboard |
 | ❤️ **Site Health** | Plugin status in WordPress Site Health |
 | 🔧 **Granular Reset** | Reset specific components without losing all data |
@@ -33,6 +35,7 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 🔒 BlockForce WP (top-level menu)
 ├── 📊 Overview — Login status & blocked IPs
 ├── 📋 Activity Log — Browse login attempts
+├── 🛡️ Blocked IPs — Manage active and expired IP blocks
 ├── ⚙️ Settings — Configure protection options
 └── 🔧 Reset & Tools — Granular reset options
 ```
@@ -55,6 +58,7 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 | Log Retention (Days) | How long to keep security logs | 90 days |
 | Enable IP Blocking | Block IPs after failed attempts | Enabled |
 | Enable Auto URL Change | Change URL on persistent attacks | Enabled |
+| Disable Debug Logs | Suppress PHP/debug output from the plugin runtime | Enabled |
 | Security Alert Email | Email for notifications | Admin email |
 
 ### Reset Options
@@ -91,6 +95,14 @@ Rename `/wp-content/plugins/blockforce-wp` to `blockforce-wp-disabled`
 ### How do I find my secret login URL?
 
 Check your email for the notification, or go to **BlockForce WP → Overview**.
+
+### Will my secret login slug appear in public login links?
+
+BlockForce WP avoids rewriting public-facing WordPress login links to the secret slug. The custom URL is used in login/admin contexts while default `wp-login.php` and unauthenticated `wp-admin` access are redirected when a custom slug is active.
+
+### Can I see attacker user agents?
+
+Yes. Activity Log and Blocked IPs show a readable user-agent name with the raw user-agent available on hover. Alert emails also include the detected user-agent name and raw user-agent string.
 
 ### Will this conflict with other security plugins?
 
