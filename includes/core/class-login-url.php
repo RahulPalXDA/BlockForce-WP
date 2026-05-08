@@ -74,11 +74,11 @@ class BlockForce_WP_Login_Url
     }
     public function change_login_url($url, $path, $scheme = null, $blog_id = null)
     {
-        return ($this->login_slug && strpos($url, 'wp-login.php') !== false) ? str_replace('wp-login.php', $this->login_slug, $url) : $url;
+        return ($this->should_rewrite_login_url($url) && strpos($url, 'wp-login.php') !== false) ? str_replace('wp-login.php', $this->login_slug, $url) : $url;
     }
     public function change_login_redirect_url($location, $status)
     {
-        return ($this->login_slug && strpos($location, 'wp-login.php') !== false) ? str_replace('wp-login.php', $this->login_slug, $location) : $location;
+        return ($this->should_rewrite_login_url($location) && strpos($location, 'wp-login.php') !== false) ? str_replace('wp-login.php', $this->login_slug, $location) : $location;
     }
     public function change_logout_redirect_url($redirect_to, $requested_redirect_to, $user)
     {
@@ -96,5 +96,15 @@ class BlockForce_WP_Login_Url
     {
         if ($this->login_slug)
             remove_action('template_redirect', 'wp_redirect_admin_locations', 1000);
+    }
+    private function should_rewrite_login_url($url)
+    {
+        if (!$this->login_slug || strpos($url, 'wp-login.php') === false)
+            return false;
+        if ($this->is_login_page())
+            return true;
+        if (is_admin() && is_user_logged_in())
+            return true;
+        return false;
     }
 }
