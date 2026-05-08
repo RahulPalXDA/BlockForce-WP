@@ -47,7 +47,7 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 If you get locked out, try these methods:
 
 **Method 1: Wait it out**
-Block duration expires automatically (default: 2 minutes, configurable in settings)
+Block duration expires automatically (default: 24 hours, configurable in settings)
 
 **Method 2: Use phpMyAdmin or database tool**
 Run this SQL query to unblock your IP (replace `wp_` with your actual table prefix):

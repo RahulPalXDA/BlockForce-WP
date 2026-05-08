@@ -69,13 +69,14 @@ class BlockForce_WP_Security
             return;
         $attempts = $this->get_ip_attempts($user_ip);
         $attempts[] = array('time' => $current_time, 'type' => $type);
-        $log_time = isset($this->settings['log_time']) ? (int) $this->settings['log_time'] : 7200;
+        $defaults = blockforce_wp_default_settings();
+        $log_time = isset($this->settings['log_time']) ? (int) $this->settings['log_time'] : (int) $defaults['log_time'];
         $attempts = array_filter($attempts, function ($event) use ($current_time, $log_time) {
             return ($current_time - $event['time']) < $log_time;
         });
         $this->update_ip_attempts($user_ip, $attempts);
-        $block_time = isset($this->settings['block_time']) ? (int) $this->settings['block_time'] : 120;
-        $attempt_limit = isset($this->settings['attempt_limit']) ? (int) $this->settings['attempt_limit'] : 2;
+        $block_time = isset($this->settings['block_time']) ? (int) $this->settings['block_time'] : (int) $defaults['block_time'];
+        $attempt_limit = isset($this->settings['attempt_limit']) ? (int) $this->settings['attempt_limit'] : (int) $defaults['attempt_limit'];
         $enable_url_change = isset($this->settings['enable_url_change']) ? (int) $this->settings['enable_url_change'] : 1;
         $enable_ip_blocking = isset($this->settings['enable_ip_blocking']) ? (int) $this->settings['enable_ip_blocking'] : 1;
         $login_attempt_count = 0;
@@ -141,7 +142,8 @@ class BlockForce_WP_Security
     }
     private function update_ip_attempts($user_ip, $attempts)
     {
-        set_transient('bfwp_attempts_' . $user_ip, $attempts, isset($this->settings['log_time']) ? (int) $this->settings['log_time'] : 7200);
+        $defaults = blockforce_wp_default_settings();
+        set_transient('bfwp_attempts_' . $user_ip, $attempts, isset($this->settings['log_time']) ? (int) $this->settings['log_time'] : (int) $defaults['log_time']);
     }
     public function is_ip_blocked($user_ip)
     {
@@ -168,7 +170,8 @@ class BlockForce_WP_Security
     public function cleanup_old_attempts()
     {
         global $wpdb;
-        $retention = isset($this->settings['log_retention_days']) ? (int) $this->settings['log_retention_days'] : 30;
+        $defaults = blockforce_wp_default_settings();
+        $retention = isset($this->settings['log_retention_days']) ? (int) $this->settings['log_retention_days'] : (int) $defaults['log_retention_days'];
         $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}" . BFWP_LOGS_TABLE . " WHERE time < DATE_SUB(NOW(), INTERVAL %d DAY)", $retention));
         $wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->prefix}" . BFWP_BLOCKS_TABLE . " WHERE expires_at < %s", current_time('mysql')));
     }

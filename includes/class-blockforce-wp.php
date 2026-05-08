@@ -5,10 +5,12 @@ if (!defined('ABSPATH'))
 class BlockForce_WP
 {
     public $settings, $security, $login_url, $admin, $features, $dashboard, $health_check, $basename;
-    private $def = array('attempt_limit' => 3, 'block_time' => 3600, 'log_time' => 2592000, 'log_retention_days' => 30, 'enable_url_change' => 1, 'enable_ip_blocking' => 1, 'disable_debug_logs' => 1, 'alert_email' => '');
+    private $def = array();
     public function __construct($basename)
     {
-        $this->settings = get_option('blockforce_settings', $this->def);
+        $this->def = blockforce_wp_default_settings();
+        blockforce_wp_upgrade_legacy_default_settings();
+        $this->settings = wp_parse_args(get_option('blockforce_settings', array()), $this->def);
         $this->basename = $basename;
         self::maybe_upgrade_schema();
         if (!empty($this->settings['disable_debug_logs'])) {

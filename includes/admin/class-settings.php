@@ -43,12 +43,12 @@ class BlockForce_WP_Admin_Settings
     }
     public function render_attempt_limit()
     {
-        echo '<input type="number" name="blockforce_settings[attempt_limit]" value="' . esc_attr($this->settings['attempt_limit']) . '" min="1" max="100" class="blockforce-input-narrow"><p class="description">' . esc_html__('Failed attempts before protection. Default: 2', $this->text_domain) . '</p>';
+        echo '<input type="number" name="blockforce_settings[attempt_limit]" value="' . esc_attr($this->settings['attempt_limit']) . '" min="1" max="100" class="blockforce-input-narrow"><p class="description">' . esc_html__('Failed attempts before protection. Default: 5', $this->text_domain) . '</p>';
     }
     public function render_block_time()
     {
         $min = round($this->settings['block_time'] / 60, 1);
-        echo '<input type="number" name="blockforce_settings[block_time]" value="' . esc_attr($this->settings['block_time']) . '" min="1" class="blockforce-input-medium"> <span class="description">' . esc_html__('seconds', $this->text_domain) . '</span> <span class="blockforce-time-hint">(' . esc_html(sprintf(__('≈ %s minutes', $this->text_domain), $min)) . ')</span><p class="description">' . esc_html__('Block duration. Default: 120s', $this->text_domain) . '</p>';
+        echo '<input type="number" name="blockforce_settings[block_time]" value="' . esc_attr($this->settings['block_time']) . '" min="1" class="blockforce-input-medium"> <span class="description">' . esc_html__('seconds', $this->text_domain) . '</span> <span class="blockforce-time-hint">(' . esc_html(sprintf(__('≈ %s minutes', $this->text_domain), $min)) . ')</span><p class="description">' . esc_html__('Block duration. Default: 86400s (24 hours)', $this->text_domain) . '</p>';
     }
     public function render_enable_ip_blocking()
     {
@@ -58,11 +58,11 @@ class BlockForce_WP_Admin_Settings
     public function render_log_time()
     {
         $h = round($this->settings['log_time'] / 3600, 1);
-        echo '<input type="number" name="blockforce_settings[log_time]" value="' . esc_attr($this->settings['log_time']) . '" min="1" class="blockforce-input-medium"> <span class="description">' . esc_html__('seconds', $this->text_domain) . '</span> <span class="blockforce-time-hint">(' . esc_html(sprintf(__('≈ %s hours', $this->text_domain), $h)) . ')</span><p class="description">' . esc_html__('Monitoring window. Default: 7200s', $this->text_domain) . '</p>';
+        echo '<input type="number" name="blockforce_settings[log_time]" value="' . esc_attr($this->settings['log_time']) . '" min="1" class="blockforce-input-medium"> <span class="description">' . esc_html__('seconds', $this->text_domain) . '</span> <span class="blockforce-time-hint">(' . esc_html(sprintf(__('≈ %s hours', $this->text_domain), $h)) . ')</span><p class="description">' . esc_html__('Monitoring window. Default: 1800s (30 minutes)', $this->text_domain) . '</p>';
     }
     public function render_log_retention_days()
     {
-        echo '<input type="number" name="blockforce_settings[log_retention_days]" value="' . esc_attr($this->settings['log_retention_days'] ?? 30) . '" min="1" max="365" class="blockforce-input-narrow"><p class="description">' . esc_html__('Security log retention in days. Default: 30', $this->text_domain) . '</p>';
+        echo '<input type="number" name="blockforce_settings[log_retention_days]" value="' . esc_attr($this->settings['log_retention_days'] ?? 90) . '" min="1" max="365" class="blockforce-input-narrow"><p class="description">' . esc_html__('Security log retention in days. Default: 90', $this->text_domain) . '</p>';
     }
     public function render_enable_url_change()
     {

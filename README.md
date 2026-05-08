@@ -49,10 +49,10 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| Maximum Failed Attempts | Attempts before triggering protection | 2 |
-| IP Block Duration | How long to block malicious IPs | 120 seconds |
-| Attack Monitoring Window | Window for tracking persistent attacks | 7200 seconds |
-| Log Retention (Days) | How long to keep security logs | 30 days |
+| Maximum Failed Attempts | Attempts before triggering protection | 5 |
+| IP Block Duration | How long to block malicious IPs | 86400 seconds (24 hours) |
+| Attack Monitoring Window | Window for tracking persistent attacks | 1800 seconds (30 minutes) |
+| Log Retention (Days) | How long to keep security logs | 90 days |
 | Enable IP Blocking | Block IPs after failed attempts | Enabled |
 | Enable Auto URL Change | Change URL on persistent attacks | Enabled |
 | Security Alert Email | Email for notifications | Admin email |
@@ -70,7 +70,7 @@ BlockForce WP is a lightweight yet powerful security plugin designed to protect 
 ### What happens if I get locked out?
 
 **Method 1: Wait it out**
-Block duration expires automatically (default: 2 minutes)
+Block duration expires automatically (default: 24 hours)
 
 **Method 2: Unblock via database**
 ```sql
