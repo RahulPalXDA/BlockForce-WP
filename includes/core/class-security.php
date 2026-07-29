@@ -39,9 +39,17 @@ class BlockForce_WP_Security
     }
     public function handle_lostpassword_errors($errors, $user_data)
     {
-        if ($errors->get_error_code()) {
+        $codes = $errors->get_error_codes();
+        if (!empty($codes)) {
             $user_login = isset($_POST['user_login']) ? sanitize_text_field($_POST['user_login']) : 'unknown';
             $this->log_activity($user_login, 'lostpassword_failed');
+        }
+        $enumerating_codes = array('invalidcombo', 'invalid_email', 'invalid_username');
+        if (array_intersect($codes, $enumerating_codes)) {
+            foreach ($codes as $code) {
+                $errors->remove($code);
+            }
+            $errors->add('bfwp_generic', __('If an account matches that username or email, a password reset link has been sent.', 'blockforce-wp'));
         }
         return $errors;
     }
