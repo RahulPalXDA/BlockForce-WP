@@ -26,9 +26,13 @@ function blockforce_wp_default_settings()
 }
 function blockforce_wp_upgrade_legacy_default_settings()
 {
-    $settings = get_option('blockforce_settings');
-    if (!is_array($settings))
+    if (get_option('blockforce_legacy_migrated'))
         return;
+    $settings = get_option('blockforce_settings');
+    if (!is_array($settings)) {
+        update_option('blockforce_legacy_migrated', 1);
+        return;
+    }
     $legacy_profiles = array(
         array('attempt_limit' => 2, 'block_time' => 120, 'log_time' => 7200, 'log_retention_days' => 30),
         array('attempt_limit' => 3, 'block_time' => 3600, 'log_time' => 2592000, 'log_retention_days' => 30),
@@ -48,9 +52,10 @@ function blockforce_wp_upgrade_legacy_default_settings()
                 $updated[$key] = $defaults[$key];
             }
             update_option('blockforce_settings', $updated);
-            return;
+            break;
         }
     }
+    update_option('blockforce_legacy_migrated', 1);
 }
 function blockforce_wp_activate()
 {
@@ -74,6 +79,7 @@ function blockforce_wp_uninstall_cleanup()
     delete_option('blockforce_db_version');
     delete_option('blockforce_login_slug');
     delete_option('blockforce_last_url_change');
+    delete_option('blockforce_legacy_migrated');
     delete_option('blockforce_attempts');
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}" . BFWP_LOGS_TABLE);
     $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}" . BFWP_BLOCKS_TABLE);
