@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BlockForce WP
  * Description: Login security with IP blocking and automatic URL change.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: RahulPalXDA
  * License: GPLv2 or later
  * Text Domain: blockforce-wp
@@ -10,7 +10,7 @@
 declare(strict_types=1);
 if (!defined('ABSPATH'))
     exit;
-define('BFWP_VERSION', '1.1.0');
+define('BFWP_VERSION', '1.2.0');
 define('BFWP_DB_VERSION', '1.1.1');
 define('BFWP_PATH', plugin_dir_path(__FILE__));
 define('BFWP_URL', plugin_dir_url(__FILE__));
