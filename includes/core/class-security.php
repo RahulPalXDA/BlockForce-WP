@@ -4,6 +4,7 @@ if (!defined('ABSPATH'))
     exit;
 class BlockForce_WP_Security
 {
+    const URL_CHANGE_COOLDOWN = 300;
     private $settings;
     private $core;
     public function __construct($settings, $core)
@@ -105,9 +106,13 @@ class BlockForce_WP_Security
     }
     private function change_login_url_and_alert($username, $user_ip, $attempt_count, $user_agent)
     {
+        $last_change = (int) get_option('blockforce_last_url_change', 0);
+        if ((time() - $last_change) < self::URL_CHANGE_COOLDOWN)
+            return;
         $new_login_slug = BlockForce_WP_Utils::generate_random_slug();
         if (BlockForce_WP_Utils::send_admin_alert($user_ip, $new_login_slug, $user_agent)) {
             update_option('blockforce_login_slug', $new_login_slug);
+            update_option('blockforce_last_url_change', time());
             $this->core->login_url->flush_rewrite_rules();
         }
     }

@@ -138,6 +138,7 @@ class BlockForce_WP_Admin
                 break;
             case 'reset_url':
                 delete_option('blockforce_login_slug');
+                delete_option('blockforce_last_url_change');
                 $this->core->login_url->flush_rewrite_rules();
                 $msg = __('URL reset.', $this->text_domain);
                 break;
@@ -146,6 +147,7 @@ class BlockForce_WP_Admin
                 $wpdb->query("DELETE FROM $blocks");
                 blockforce_wp_clear_all_transients();
                 delete_option('blockforce_login_slug');
+                delete_option('blockforce_last_url_change');
                 $this->core->login_url->flush_rewrite_rules();
                 $msg = __('Full reset done.', $this->text_domain);
                 break;
