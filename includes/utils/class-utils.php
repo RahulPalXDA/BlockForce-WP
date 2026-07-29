@@ -4,14 +4,63 @@ if (!defined('ABSPATH'))
     exit;
 class BlockForce_WP_Utils
 {
+    const TRUSTED_IP_HEADERS = array('X-Forwarded-For', 'CF-Connecting-IP', 'X-Real-IP');
     public static function get_user_ip()
     {
-        if (isset($_SERVER['REMOTE_ADDR'])) {
-            $ip = sanitize_text_field($_SERVER['REMOTE_ADDR']);
-            if (filter_var($ip, FILTER_VALIDATE_IP))
-                return $ip;
+        $remote = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '';
+        $remote = filter_var($remote, FILTER_VALIDATE_IP) ? $remote : '127.0.0.1';
+        $settings = get_option('blockforce_settings', array());
+        $header = !empty($settings['trusted_ip_header']) ? $settings['trusted_ip_header'] : '';
+        $proxies = !empty($settings['trusted_proxies']) ? $settings['trusted_proxies'] : '';
+        if ($header && $proxies && in_array($header, self::TRUSTED_IP_HEADERS, true) && self::ip_matches_list($remote, $proxies)) {
+            $server_key = 'HTTP_' . str_replace('-', '_', strtoupper($header));
+            if (!empty($_SERVER[$server_key])) {
+                $forwarded = sanitize_text_field(wp_unslash($_SERVER[$server_key]));
+                $first = trim(explode(',', $forwarded)[0]);
+                if (filter_var($first, FILTER_VALIDATE_IP))
+                    return $first;
+            }
         }
-        return '127.0.0.1';
+        return $remote;
+    }
+    public static function is_valid_ip_or_cidr($entry)
+    {
+        if (strpos($entry, '/') === false)
+            return (bool) filter_var($entry, FILTER_VALIDATE_IP);
+        $parts = explode('/', $entry, 2);
+        list($subnet, $bits) = array_pad($parts, 2, null);
+        if (!filter_var($subnet, FILTER_VALIDATE_IP) || !ctype_digit((string) $bits))
+            return false;
+        $max_bits = filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ? 32 : 128;
+        return ((int) $bits) <= $max_bits;
+    }
+    private static function ip_matches_list($ip, $list)
+    {
+        foreach (preg_split('/[\r\n,]+/', $list, -1, PREG_SPLIT_NO_EMPTY) as $entry) {
+            $entry = trim($entry);
+            if ($entry !== '' && self::ip_in_cidr($ip, $entry))
+                return true;
+        }
+        return false;
+    }
+    private static function ip_in_cidr($ip, $cidr)
+    {
+        if (strpos($cidr, '/') === false)
+            return $ip === $cidr;
+        list($subnet, $bits) = explode('/', $cidr, 2);
+        $bits = (int) $bits;
+        $ip_bin = @inet_pton($ip);
+        $subnet_bin = @inet_pton($subnet);
+        if ($ip_bin === false || $subnet_bin === false || strlen($ip_bin) !== strlen($subnet_bin))
+            return false;
+        $bytes = intdiv($bits, 8);
+        $remainder_bits = $bits % 8;
+        if ($bytes > 0 && strncmp($ip_bin, $subnet_bin, $bytes) !== 0)
+            return false;
+        if ($remainder_bits === 0)
+            return true;
+        $mask = chr((0xFF << (8 - $remainder_bits)) & 0xFF);
+        return (($ip_bin[$bytes] & $mask) === ($subnet_bin[$bytes] & $mask));
     }
     public static function get_user_agent()
     {

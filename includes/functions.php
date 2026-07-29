@@ -17,6 +17,8 @@ function blockforce_wp_default_settings()
         'enable_ip_blocking' => 1,
         'disable_debug_logs' => 1,
         'alert_email' => '',
+        'trusted_ip_header' => '',
+        'trusted_proxies' => '',
     );
 }
 function blockforce_wp_upgrade_legacy_default_settings()

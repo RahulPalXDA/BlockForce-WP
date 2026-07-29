@@ -22,6 +22,8 @@ class BlockForce_WP_Admin_Settings
         add_settings_field('enable_url_change', __('Enable Auto URL Change', $this->text_domain), array($this, 'render_enable_url_change'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('disable_debug_logs', __('Disable Debug Logs', $this->text_domain), array($this, 'render_disable_debug_logs'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('alert_email', __('Security Alert Email', $this->text_domain), array($this, 'render_alert_email'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field('trusted_ip_header', __('Trusted Proxy Header', $this->text_domain), array($this, 'render_trusted_ip_header'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field('trusted_proxies', __('Trusted Proxy IPs', $this->text_domain), array($this, 'render_trusted_proxies'), 'blockforce_settings', 'blockforce_main_section');
     }
     public function sanitize_settings($input)
     {
@@ -34,6 +36,16 @@ class BlockForce_WP_Admin_Settings
         $out['disable_debug_logs'] = isset($input['disable_debug_logs']) ? 1 : 0;
         $out['enable_ip_blocking'] = isset($input['enable_ip_blocking']) ? 1 : 0;
         $out['alert_email'] = isset($input['alert_email']) ? sanitize_email($input['alert_email']) : '';
+        $header = isset($input['trusted_ip_header']) ? sanitize_text_field($input['trusted_ip_header']) : '';
+        $out['trusted_ip_header'] = in_array($header, BlockForce_WP_Utils::TRUSTED_IP_HEADERS, true) ? $header : '';
+        $proxies_raw = isset($input['trusted_proxies']) ? (string) $input['trusted_proxies'] : '';
+        $valid_entries = array();
+        foreach (preg_split('/[\r\n,]+/', $proxies_raw, -1, PREG_SPLIT_NO_EMPTY) as $entry) {
+            $entry = trim($entry);
+            if ($entry !== '' && BlockForce_WP_Utils::is_valid_ip_or_cidr($entry))
+                $valid_entries[] = $entry;
+        }
+        $out['trusted_proxies'] = implode("\n", $valid_entries);
         add_settings_error('blockforce_settings', 'settings_updated', __('Settings saved!', $this->text_domain), 'updated');
         return $out;
     }
@@ -73,6 +85,21 @@ class BlockForce_WP_Admin_Settings
     {
         $en = $this->settings['disable_debug_logs'] ?? 1;
         echo '<label><input type="checkbox" name="blockforce_settings[disable_debug_logs]" value="1" ' . checked(1, $en, false) . '> ' . esc_html__('Disable all debug logs and PHP errors', $this->text_domain) . ' <span class="blockforce-badge ' . ($en ? 'blockforce-badge-enabled' : 'blockforce-badge-disabled') . '">' . ($en ? esc_html__('ACTIVE', $this->text_domain) : esc_html__('INACTIVE', $this->text_domain)) . '</span></label><p class="description">' . esc_html__('Forces error_reporting(0) to prevent sensitivity leaks.', $this->text_domain) . '</p>';
+    }
+    public function render_trusted_ip_header()
+    {
+        $val = $this->settings['trusted_ip_header'] ?? '';
+        echo '<select name="blockforce_settings[trusted_ip_header]">';
+        echo '<option value="">' . esc_html__('Disabled (trust REMOTE_ADDR only)', $this->text_domain) . '</option>';
+        foreach (BlockForce_WP_Utils::TRUSTED_IP_HEADERS as $header) {
+            echo '<option value="' . esc_attr($header) . '" ' . selected($val, $header, false) . '>' . esc_html($header) . '</option>';
+        }
+        echo '</select><p class="description">' . esc_html__('Only set this if your site sits behind the proxy/CDN listed below. Enabling it without a trusted proxy list lets visitors spoof their IP and bypass blocking entirely.', $this->text_domain) . '</p>';
+    }
+    public function render_trusted_proxies()
+    {
+        $val = $this->settings['trusted_proxies'] ?? '';
+        echo '<textarea name="blockforce_settings[trusted_proxies]" rows="4" class="large-text code" placeholder="203.0.113.0/24">' . esc_textarea($val) . '</textarea><p class="description">' . esc_html__('One IP address or CIDR range per line. The header above is only trusted when the request comes from one of these addresses.', $this->text_domain) . '</p>';
     }
     public function render_alert_email()
     {
