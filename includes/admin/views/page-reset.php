@@ -54,12 +54,7 @@ $reset_options = array(
     </p>
 
     <div class="blockforce-reset-grid">
-        <?php foreach ($reset_options as $option):
-            $url = wp_nonce_url(
-                admin_url('admin.php?page=blockforce-wp-reset&bfwp_action=' . $option['id']),
-                'bfwp_reset_' . $option['id']
-            );
-            ?>
+        <?php foreach ($reset_options as $option): ?>
             <div class="blockforce-reset-card blockforce-reset-card--<?php echo esc_attr($option['color']); ?>">
                 <div class="blockforce-reset-card__icon">
                     <span class="dashicons <?php echo esc_attr($option['icon']); ?>"></span>
@@ -67,10 +62,14 @@ $reset_options = array(
                 <div class="blockforce-reset-card__content">
                     <h3><?php echo esc_html($option['title']); ?></h3>
                     <p><?php echo esc_html($option['desc']); ?></p>
-                    <a href="<?php echo esc_url($url); ?>" class="button button-secondary"
-                        onclick="return confirm('<?php echo esc_js($option['confirm']); ?>')">
-                        <?php echo esc_html($option['button']); ?>
-                    </a>
+                    <form method="post" action="<?php echo esc_url(admin_url('admin.php?page=blockforce-wp-reset')); ?>">
+                        <?php wp_nonce_field('bfwp_reset_' . $option['id'], '_wpnonce_reset'); ?>
+                        <input type="hidden" name="bfwp_action" value="<?php echo esc_attr($option['id']); ?>">
+                        <button type="submit" class="button button-secondary"
+                            onclick="return confirm('<?php echo esc_js($option['confirm']); ?>')">
+                            <?php echo esc_html($option['button']); ?>
+                        </button>
+                    </form>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -89,18 +88,14 @@ $reset_options = array(
         <p><strong><?php esc_html_e('Note:', $text_domain); ?></strong>
             <?php esc_html_e('Your configuration settings will NOT be changed.', $text_domain); ?></p>
 
-        <?php
-        $full_reset_url = wp_nonce_url(
-            admin_url('admin.php?page=blockforce-wp-reset&bfwp_action=full_reset'),
-            'bfwp_reset_full_reset'
-        );
-        ?>
-        <p class="blockforce-mt-15">
-            <a href="<?php echo esc_url($full_reset_url); ?>" class="button button-large blockforce-button-danger"
+        <form method="post" action="<?php echo esc_url(admin_url('admin.php?page=blockforce-wp-reset')); ?>" class="blockforce-mt-15">
+            <?php wp_nonce_field('bfwp_reset_full_reset', '_wpnonce_reset'); ?>
+            <input type="hidden" name="bfwp_action" value="full_reset">
+            <button type="submit" class="button button-large blockforce-button-danger"
                 onclick="return confirm('<?php echo esc_js(__('WARNING: This will reset ALL plugin data. Are you absolutely sure?', $text_domain)); ?>')">
                 <span class="dashicons dashicons-trash"></span>
                 <?php esc_html_e('Reset Everything', $text_domain); ?>
-            </a>
-        </p>
+            </button>
+        </form>
     </div>
 </div>

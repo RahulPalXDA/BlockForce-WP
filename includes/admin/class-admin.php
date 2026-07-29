@@ -114,11 +114,10 @@ class BlockForce_WP_Admin
     }
     public function handle_reset_actions()
     {
-        if (!$this->is_our_page() || empty($_GET['bfwp_action']))
+        if (!$this->is_our_page() || empty($_POST['bfwp_action']))
             return;
-        $action = sanitize_key($_GET['bfwp_action']);
-        if (!wp_verify_nonce($_GET['_wpnonce'] ?? '', 'bfwp_reset_' . $action))
-            wp_die(__('Security check failed.', $this->text_domain));
+        $action = sanitize_key($_POST['bfwp_action']);
+        check_admin_referer('bfwp_reset_' . $action, '_wpnonce_reset');
         global $wpdb;
         $logs = $wpdb->prefix . BFWP_LOGS_TABLE;
         $blocks = $wpdb->prefix . BFWP_BLOCKS_TABLE;
