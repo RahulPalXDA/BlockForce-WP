@@ -70,12 +70,16 @@ class BlockForce_WP_Utils
     }
     public static function is_authentic_localhost()
     {
+        if (defined('WP_CLI') && WP_CLI)
+            return true;
         $addr = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field($_SERVER['REMOTE_ADDR']) : '';
         if (!self::is_localhost_ip($addr))
             return false;
         $srv = isset($_SERVER['SERVER_ADDR']) ? sanitize_text_field($_SERVER['SERVER_ADDR']) : '';
-        if (!empty($srv) && !self::is_localhost_ip($srv))
-            error_log('BlockForce WP: Probable IP Spoof detected.');
+        if (!empty($srv) && !self::is_localhost_ip($srv)) {
+            error_log('BlockForce WP: Probable IP Spoof detected, treating request as untrusted.');
+            return false;
+        }
         return true;
     }
     public static function generate_random_slug()
