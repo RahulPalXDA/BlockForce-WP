@@ -19,6 +19,9 @@ function blockforce_wp_default_settings()
         'alert_email' => '',
         'trusted_ip_header' => '',
         'trusted_proxies' => '',
+        'disable_xmlrpc_multicall' => 1,
+        'disable_xmlrpc_entirely' => 0,
+        'disable_user_enum' => 1,
     );
 }
 function blockforce_wp_upgrade_legacy_default_settings()

@@ -24,6 +24,9 @@ class BlockForce_WP_Admin_Settings
         add_settings_field('alert_email', __('Security Alert Email', $this->text_domain), array($this, 'render_alert_email'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('trusted_ip_header', __('Trusted Proxy Header', $this->text_domain), array($this, 'render_trusted_ip_header'), 'blockforce_settings', 'blockforce_main_section');
         add_settings_field('trusted_proxies', __('Trusted Proxy IPs', $this->text_domain), array($this, 'render_trusted_proxies'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field('disable_xmlrpc_multicall', __('Block XML-RPC Multicall', $this->text_domain), array($this, 'render_disable_xmlrpc_multicall'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field('disable_xmlrpc_entirely', __('Disable XML-RPC Entirely', $this->text_domain), array($this, 'render_disable_xmlrpc_entirely'), 'blockforce_settings', 'blockforce_main_section');
+        add_settings_field('disable_user_enum', __('Block Username Enumeration', $this->text_domain), array($this, 'render_disable_user_enum'), 'blockforce_settings', 'blockforce_main_section');
     }
     public function sanitize_settings($input)
     {
@@ -46,6 +49,9 @@ class BlockForce_WP_Admin_Settings
                 $valid_entries[] = $entry;
         }
         $out['trusted_proxies'] = implode("\n", $valid_entries);
+        $out['disable_xmlrpc_multicall'] = isset($input['disable_xmlrpc_multicall']) ? 1 : 0;
+        $out['disable_xmlrpc_entirely'] = isset($input['disable_xmlrpc_entirely']) ? 1 : 0;
+        $out['disable_user_enum'] = isset($input['disable_user_enum']) ? 1 : 0;
         add_settings_error('blockforce_settings', 'settings_updated', __('Settings saved!', $this->text_domain), 'updated');
         return $out;
     }
@@ -100,6 +106,21 @@ class BlockForce_WP_Admin_Settings
     {
         $val = $this->settings['trusted_proxies'] ?? '';
         echo '<textarea name="blockforce_settings[trusted_proxies]" rows="4" class="large-text code" placeholder="203.0.113.0/24">' . esc_textarea($val) . '</textarea><p class="description">' . esc_html__('One IP address or CIDR range per line. The header above is only trusted when the request comes from one of these addresses.', $this->text_domain) . '</p>';
+    }
+    public function render_disable_xmlrpc_multicall()
+    {
+        $en = $this->settings['disable_xmlrpc_multicall'] ?? 1;
+        echo '<label><input type="checkbox" name="blockforce_settings[disable_xmlrpc_multicall]" value="1" ' . checked(1, $en, false) . '> ' . esc_html__('Remove the system.multicall XML-RPC method', $this->text_domain) . '</label><p class="description">' . esc_html__('Prevents testing hundreds of password guesses in a single XML-RPC request, bypassing the attempt limit above.', $this->text_domain) . '</p>';
+    }
+    public function render_disable_xmlrpc_entirely()
+    {
+        $en = $this->settings['disable_xmlrpc_entirely'] ?? 0;
+        echo '<label><input type="checkbox" name="blockforce_settings[disable_xmlrpc_entirely]" value="1" ' . checked(1, $en, false) . '> ' . esc_html__('Disable XML-RPC completely', $this->text_domain) . '</label><p class="description">' . esc_html__('Only enable this if you don\'t use Jetpack, the WordPress mobile app, or other tools that rely on XML-RPC.', $this->text_domain) . '</p>';
+    }
+    public function render_disable_user_enum()
+    {
+        $en = $this->settings['disable_user_enum'] ?? 1;
+        echo '<label><input type="checkbox" name="blockforce_settings[disable_user_enum]" value="1" ' . checked(1, $en, false) . '> ' . esc_html__('Block anonymous username discovery', $this->text_domain) . '</label><p class="description">' . esc_html__('Hides usernames from the REST API user list and author archive links for logged-out visitors, so the generic login error above can\'t be worked around.', $this->text_domain) . '</p>';
     }
     public function render_alert_email()
     {
