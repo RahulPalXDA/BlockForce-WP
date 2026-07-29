@@ -14,10 +14,7 @@ class BlockForce_WP
         $this->basename = $basename;
         self::maybe_upgrade_schema();
         if (!empty($this->settings['disable_debug_logs'])) {
-            error_reporting(0);
             @ini_set('display_errors', '0');
-            @ini_set('log_errors', '0');
-            @ini_set('error_log', '/dev/null');
         }
         $this->security = new BlockForce_WP_Security($this->settings, $this);
         $this->login_url = new BlockForce_WP_Login_Url($this->settings, $this);

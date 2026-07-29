@@ -90,7 +90,7 @@ class BlockForce_WP_Admin_Settings
     public function render_disable_debug_logs()
     {
         $en = $this->settings['disable_debug_logs'] ?? 1;
-        echo '<label><input type="checkbox" name="blockforce_settings[disable_debug_logs]" value="1" ' . checked(1, $en, false) . '> ' . esc_html__('Disable all debug logs and PHP errors', $this->text_domain) . ' <span class="blockforce-badge ' . ($en ? 'blockforce-badge-enabled' : 'blockforce-badge-disabled') . '">' . ($en ? esc_html__('ACTIVE', $this->text_domain) : esc_html__('INACTIVE', $this->text_domain)) . '</span></label><p class="description">' . esc_html__('Forces error_reporting(0) to prevent sensitivity leaks.', $this->text_domain) . '</p>';
+        echo '<label><input type="checkbox" name="blockforce_settings[disable_debug_logs]" value="1" ' . checked(1, $en, false) . '> ' . esc_html__('Hide PHP errors from page output', $this->text_domain) . ' <span class="blockforce-badge ' . ($en ? 'blockforce-badge-enabled' : 'blockforce-badge-disabled') . '">' . ($en ? esc_html__('ACTIVE', $this->text_domain) : esc_html__('INACTIVE', $this->text_domain)) . '</span></label><p class="description">' . esc_html__('Sets display_errors off so visitors never see raw PHP errors. Server-side error logging is left untouched so you can still investigate issues.', $this->text_domain) . '</p>';
     }
     public function render_trusted_ip_header()
     {
